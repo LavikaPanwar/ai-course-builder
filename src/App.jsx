@@ -19,11 +19,9 @@ const LIAA = () => {
   const timeOptions = ['1-2h/week', '3-5h/week', '6-10h/week', '10+h/week'];
   const backgroundLevels = ['Beginner', 'Some Experience', 'Intermediate', 'Advanced'];
 
-  // 🧠 REAL VALIDATION
   const validateGoal = (goal) => {
     if (!goal.trim()) return 'Please enter a learning goal';
     if (goal.length < 5) return 'Please be more specific about your goal';
-    if (goal.length > 100) return 'Goal is too long, please be more concise';
     return null;
   };
 
@@ -34,73 +32,46 @@ const LIAA = () => {
     }
   };
 
-  // 🚀 REAL AI ROADMAP GENERATION
   const generateRoadmapWithAI = async () => {
-  const validation = validateGoal(learnerData.goal);
-  if (validation) {
-    setValidationError(validation);
-    return;
-  }
-
-  setLoading(true);
-  setAiStatus('Connecting to AI...');
-
-  try {
-    const response = await fetch('/api/generate-roadmap', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(learnerData)
-    });
-
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
+    const validation = validateGoal(learnerData.goal);
+    if (validation) {
+      setValidationError(validation);
+      return;
     }
 
-    const roadmapData = await response.json();
-    setRoadmap(roadmapData);
-    setStep('roadmap');
-    
-  } catch (error) {
-    console.error('API Error:', error);
-    // Fallback to mock data
-    setRoadmap(generateIntelligentMockRoadmap(learnerData));
-    setStep('roadmap');
-  } finally {
-    setLoading(false);
-  }
-};
-  // 🧠 INTELLIGENT ROADMAP GENERATION
-  const simulateAIProcessing = async (data) => {
-  const response = await fetch('/api/generate-roadmap', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(data)
-  });
-  return await response.json();
-};
+    setLoading(true);
+    setAiStatus('Connecting to AI...');
 
-      let statusIndex = 0;
-      const statusInterval = setInterval(() => {
-        setAiStatus(statuses[statusIndex]);
-        statusIndex++;
-        if (statusIndex >= statuses.length) {
-          clearInterval(statusInterval);
-          setTimeout(() => {
-            resolve(generateIntelligentMockRoadmap(data));
-          }, 1000);
-        }
-      }, 800);
-    });
+    try {
+      const response = await fetch('/api/generate-roadmap', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(learnerData)
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
+      }
+
+      const roadmapData = await response.json();
+      setRoadmap(roadmapData);
+      setStep('roadmap');
+      
+    } catch (error) {
+      console.error('API Error:', error);
+      setRoadmap(generateIntelligentMockRoadmap(learnerData));
+      setStep('roadmap');
+    } finally {
+      setLoading(false);
+    }
   };
 
-  // 📚 INTELLIGENT ROADMAP BUILDER
   const generateIntelligentMockRoadmap = (data) => {
     const { goal, background, timeAvailable, learningStyle } = data;
     
-    // Calculate duration based on time available
     const durationMap = {
       '1-2h/week': '12-16 weeks',
       '3-5h/week': '8-12 weeks', 
@@ -108,126 +79,69 @@ const LIAA = () => {
       '10+h/week': '4-6 weeks'
     };
 
-    // Generate modules based on background and goal
-    const modules = generateModules(goal, background, learningStyle);
-    
-    return {
-      title: `Master ${goal}`,
-      estimatedDuration: durationMap[timeAvailable] || '8-12 weeks',
-      personalizedMessage: generatePersonalizedMessage(data),
-      modules: modules,
-      resources: generateResources(goal, learningStyle)
-    };
-  };
-
-  // 🎯 MODULE GENERATION
-  const generateModules = (goal, background, learningStyle) => {
-    const baseModules = [
+    const modules = [
       {
         id: 1,
         title: 'Foundation & Fundamentals',
-        description: 'Build core understanding and essential principles',
+        description: 'Build core understanding and essential principles. Establish strong foundational knowledge.',
         difficulty: 'Beginner',
         duration: '2-3 weeks',
-        topics: ['Basic concepts', 'Terminology', 'Fundamental principles'],
-        resources: []
+        topics: ['Basic concepts and terminology', 'Fundamental principles', 'Setting up environment', 'Core building blocks']
       },
       {
         id: 2,
         title: 'Core Concepts & Techniques',
-        description: 'Dive deeper into essential methods and applications',
-        difficulty: 'Intermediate', 
+        description: 'Dive deeper into essential methods, patterns, and practical applications.',
+        difficulty: 'Intermediate',
         duration: '3-4 weeks',
-        topics: ['Key techniques', 'Practical applications', 'Common patterns'],
-        resources: []
+        topics: ['Key techniques and methodologies', 'Practical applications', 'Common patterns and best practices', 'Hands-on exercises']
       },
       {
         id: 3,
-        title: 'Advanced Applications',
-        description: 'Apply knowledge to complex scenarios and real projects',
+        title: 'Advanced Applications & Projects',
+        description: 'Apply knowledge to complex scenarios, real projects, and advanced concepts.',
         difficulty: 'Advanced',
-        duration: '3-5 weeks', 
-        topics: ['Advanced patterns', 'Real-world projects', 'Optimization'],
-        resources: []
+        duration: '3-5 weeks',
+        topics: ['Real-world project implementation', 'Advanced patterns and optimization', 'Troubleshooting and debugging', 'Performance optimization']
       }
     ];
 
-    // Customize based on background
-    if (background === 'Beginner') {
-      baseModules[0].duration = '3-4 weeks';
-    } else if (background === 'Intermediate') {
-      baseModules[0].duration = '1-2 weeks';
-      baseModules[1].duration = '4-5 weeks';
-    } else if (background === 'Advanced') {
-      baseModules[0].duration = '1 week';
-      baseModules[1].duration = '2-3 weeks';
-      baseModules[2].duration = '5-6 weeks';
-    }
-
-    return baseModules;
-  };
-
-  // 💬 PERSONALIZED MESSAGES
-  const generatePersonalizedMessage = (data) => {
-    const { background, learningStyle, timeAvailable } = data;
-    
-    const backgroundMessages = {
-      'Beginner': 'Perfect starting point for beginners',
-      'Some Experience': 'Building on your existing knowledge', 
-      'Intermediate': 'Taking your skills to the next level',
-      'Advanced': 'Master-level deep dive'
-    };
-
-    const styleMessages = {
-      'Visual': 'with visual learning optimization',
-      'Reading': 'with reading-focused materials',
-      'Practical': 'with hands-on project focus',
-      'Mixed': 'with balanced learning approach'
-    };
-
-    return `${backgroundMessages[background]} ${styleMessages[learningStyle]}`;
-  };
-
-  // 📖 RESOURCE GENERATION
-  const generateResources = (goal, learningStyle) => {
-    const baseResources = [
+    const resources = [
       {
         type: 'course',
-        title: `Complete ${goal} Course`,
-        provider: 'Coursera',
-        url: '#',
-        duration: '8 hours',
+        title: `Complete ${goal} Masterclass`,
+        provider: 'Udemy',
+        url: `https://www.udemy.com/courses/search/?q=${encodeURIComponent(goal)}`,
+        duration: '10+ hours',
         free: false
       },
       {
         type: 'video',
         title: `${goal} Crash Course`,
         provider: 'YouTube',
-        url: '#', 
-        duration: '2 hours',
+        url: `https://www.youtube.com/results?search_query=${encodeURIComponent(goal + ' tutorial')}`,
+        duration: '2-3 hours',
         free: true
       },
       {
-        type: 'book',
-        title: `The ${goal} Handbook`,
-        provider: 'Amazon',
-        url: '#',
-        pages: '300',
-        free: false
-      },
-      {
         type: 'documentation',
-        title: 'Official Documentation',
-        provider: 'Docs',
-        url: '#',
+        title: 'Official Documentation & Guides',
+        provider: 'MDN Web Docs',
+        url: 'https://developer.mozilla.org',
+        duration: 'Ongoing',
         free: true
       }
     ];
 
-    return baseResources;
+    return {
+      title: `Master ${goal}`,
+      estimatedDuration: durationMap[timeAvailable] || '8-12 weeks',
+      personalizedMessage: `Customized for ${background.toLowerCase()} level with ${learningStyle.toLowerCase()} learning preference. Optimized for ${timeAvailable}.`,
+      modules,
+      resources
+    };
   };
 
-  // ✅ PROGRESS TRACKING
   const toggleModuleCompletion = (moduleId) => {
     setProgress(prev => ({
       ...prev,
@@ -244,10 +158,8 @@ const LIAA = () => {
     return Math.round((completed / roadmap.modules.length) * 100);
   };
 
-  // 🎯 RENDER FUNCTIONS (Same minimalist design but with enhanced content)
   const renderInputForm = () => (
     <div className="max-w-2xl mx-auto">
-      {/* PREMIUM HEADER */}
       <div className="premium-card text-white p-8 rounded-2xl mb-8 border border-cyan-500/20">
         <div className="text-center mb-8">
           <div className="flex items-center justify-center gap-3 mb-4">
@@ -259,7 +171,6 @@ const LIAA = () => {
             Learning Intelligence AI Assistant
           </p>
         </div>
-
         <div className="text-center">
           <p className="text-lg text-gray-300 font-light">
             AI-powered personalized learning roadmaps
@@ -267,10 +178,8 @@ const LIAA = () => {
         </div>
       </div>
 
-      {/* ENHANCED FORM */}
       <div className="premium-card p-8 rounded-2xl border border-gray-700/50">
         <div className="space-y-6">
-          {/* GOAL INPUT */}
           <div>
             <label className="flex items-center gap-2 text-sm font-medium text-cyan-400 mb-3">
               <Target className="w-4 h-4" />
@@ -293,7 +202,6 @@ const LIAA = () => {
             )}
           </div>
 
-          {/* BACKGROUND */}
           <div>
             <label className="flex items-center gap-2 text-sm font-medium text-cyan-400 mb-3">
               <BookOpen className="w-4 h-4" />
@@ -316,7 +224,6 @@ const LIAA = () => {
             </div>
           </div>
 
-          {/* TIME */}
           <div>
             <label className="flex items-center gap-2 text-sm font-medium text-cyan-400 mb-3">
               <Clock className="w-4 h-4" />
@@ -339,7 +246,6 @@ const LIAA = () => {
             </div>
           </div>
 
-          {/* LEARNING STYLE */}
           <div>
             <label className="flex items-center gap-2 text-sm font-medium text-cyan-400 mb-3">
               <TrendingUp className="w-4 h-4" />
@@ -362,7 +268,6 @@ const LIAA = () => {
             </div>
           </div>
 
-          {/* AI LOADING */}
           {loading && (
             <div className="p-4 rounded-xl border border-cyan-400/20 bg-cyan-400/5">
               <div className="flex items-center gap-3">
@@ -372,7 +277,6 @@ const LIAA = () => {
             </div>
           )}
 
-          {/* GENERATE BUTTON */}
           <button
             onClick={generateRoadmapWithAI}
             disabled={!learnerData.goal || !learnerData.background || !learnerData.timeAvailable || !learnerData.learningStyle || loading}
@@ -395,10 +299,8 @@ const LIAA = () => {
     </div>
   );
 
-  // 🗺️ ENHANCED ROADMAP VIEW
   const renderRoadmap = () => (
     <div className="max-w-4xl mx-auto">
-      {/* ROADMAP HEADER */}
       <div className="premium-card text-white p-8 rounded-2xl mb-8 border border-cyan-500/20">
         <div className="flex items-center justify-between mb-6">
           <div>
@@ -421,7 +323,6 @@ const LIAA = () => {
           </div>
         </div>
         
-        {/* PROGRESS BAR */}
         <div className="w-full bg-gray-700 rounded-full h-2">
           <div 
             className="bg-gradient-to-r from-cyan-400 to-purple-400 h-2 rounded-full transition-all duration-500"
@@ -430,7 +331,6 @@ const LIAA = () => {
         </div>
       </div>
 
-      {/* ENHANCED MODULES */}
       <div className="space-y-4">
         {roadmap.modules.map((module, index) => (
           <div 
@@ -471,7 +371,6 @@ const LIAA = () => {
                   {module.description}
                 </p>
                 
-                {/* TOPICS */}
                 <div className="flex flex-wrap gap-2 mb-3">
                   {module.topics.map((topic, i) => (
                     <span key={i} className="px-2 py-1 bg-gray-700 rounded text-xs text-gray-300">
@@ -485,7 +384,6 @@ const LIAA = () => {
         ))}
       </div>
 
-      {/* RESOURCES SECTION */}
       {roadmap.resources && (
         <div className="mt-8 premium-card p-6 rounded-2xl border border-gray-600">
           <h3 className="text-xl font-medium text-white mb-4 flex items-center gap-2">
@@ -498,6 +396,8 @@ const LIAA = () => {
                 key={index}
                 href={resource.url}
                 className="flex items-center justify-between p-3 rounded-lg border border-gray-600 hover:border-cyan-400 transition-all group"
+                target="_blank"
+                rel="noopener noreferrer"
               >
                 <div className="flex items-center gap-3">
                   {resource.type === 'video' && <Youtube className="w-4 h-4 text-red-400" />}
@@ -509,7 +409,7 @@ const LIAA = () => {
                       {resource.title}
                     </div>
                     <div className="text-xs text-gray-400">
-                      {resource.provider} • {resource.duration || resource.pages} • 
+                      {resource.provider} • {resource.duration} • 
                       {resource.free ? ' Free' : ' Paid'}
                     </div>
                   </div>
@@ -521,7 +421,6 @@ const LIAA = () => {
         </div>
       )}
 
-      {/* RESET BUTTON */}
       <button
         onClick={() => {
           setStep('input');
