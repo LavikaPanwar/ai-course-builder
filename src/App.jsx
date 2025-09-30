@@ -30,7 +30,7 @@ const AICourseBuilder = () => {
 
     try {
       // Create a detailed prompt for Claude
-      const prompt = `You are an expert educational curriculum designer. Create a personalized learning roadmap based on these details:
+      const prompt = `You are an expert educational curriculum designer who creates personalized learning roadmaps for ANY subject - from cooking to coding, music to mathematics, fitness to finance.
 
 LEARNER PROFILE:
 - Learning Goal: ${learnerData.goal}
@@ -38,23 +38,28 @@ LEARNER PROFILE:
 - Time Availability: ${learnerData.timeAvailable}
 - Learning Style: ${learnerData.learningStyle}
 
-TASK: Design a complete, personalized learning curriculum with the following structure:
+CRITICAL INSTRUCTIONS:
+1. READ THE LEARNING GOAL CAREFULLY - if it's "cooking", create a cooking curriculum. If it's "piano", create a piano curriculum. DO NOT default to programming/tech topics.
 
-1. Determine the appropriate number of modules (2-6) based on the goal complexity and background level
-2. Create specific, actionable module titles
-3. For each module, provide:
-   - A clear description
-   - Estimated duration in weeks
-   - Difficulty level (Beginner/Intermediate/Advanced)
-   - 4-6 specific, relevant topics to cover
-4. Suggest 5 types of learning resources with specific platforms and estimated quantities
+2. Create 3-6 modules that are 100% specific to "${learnerData.goal}"
 
-IMPORTANT GUIDELINES:
-- Adjust complexity based on background level
-- Make topics specific to the learning goal (not generic)
-- Consider the learning style in your recommendations
-- Be realistic with time estimates based on availability
-- Include practical, hands-on elements
+3. For each module:
+   - Title must be directly related to ${learnerData.goal}
+   - Description must explain what they'll learn about ${learnerData.goal}
+   - Duration: 2-5 weeks per module
+   - Difficulty: Beginner/Intermediate/Advanced
+   - Topics: List 4-6 VERY SPECIFIC topics within ${learnerData.goal} (NOT generic terms)
+
+4. Resources: Suggest 5 types of learning resources that are specifically for ${learnerData.goal}
+   - Include real platforms/websites for this topic
+   - Consider the learning style (${learnerData.learningStyle})
+
+EXAMPLES TO GUIDE YOU:
+- If goal is "cooking": Modules like "Knife Skills & Basic Techniques", "Mastering Flavors & Seasoning", topics like "Julienne and dice techniques", "Making stock from scratch"
+- If goal is "web development": Modules like "HTML & CSS Fundamentals", topics like "Flexbox layouts", "CSS Grid systems"
+- If goal is "guitar": Modules like "Basic Chords & Strumming", topics like "Open position chords", "Alternate picking technique"
+
+ADAPT TO THE GOAL - Don't give programming resources for cooking, or cooking resources for programming!
 
 Respond with ONLY a valid JSON object in this exact format (no markdown, no backticks, just JSON):
 
@@ -80,7 +85,7 @@ Respond with ONLY a valid JSON object in this exact format (no markdown, no back
   ]
 }`;
 
-      setAiStatus('🤖 Calling Liaa🐬 AI...');
+      setAiStatus('🤖 Calling Claude AI...');
 
       // Call Claude API
       const response = await fetch("https://api.anthropic.com/v1/messages", {
@@ -88,7 +93,6 @@ Respond with ONLY a valid JSON object in this exact format (no markdown, no back
         headers: {
           "Content-Type": "application/json",
         },
-        
         body: JSON.stringify({
           model: "claude-sonnet-4-20250514",
           max_tokens: 4000,
