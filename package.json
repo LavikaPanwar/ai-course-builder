@@ -1,5 +1,5 @@
 {
-  "name": "ai-course-builder",
+  "name": "liaa-app",
   "version": "1.0.0",
   "type": "module",
   "scripts": {
@@ -13,12 +13,7 @@
     "lucide-react": "^0.263.1"
   },
   "devDependencies": {
-    "@types/react": "^18.2.0",
-    "@types/react-dom": "^18.2.0",
-    "@vitejs/plugin-react": "^4.0.0",
-    "autoprefixer": "^10.4.14",
-    "postcss": "^8.4.24",
-    "tailwindcss": "^3.3.0",
-    "vite": "^4.4.0"
+    "@vitejs/plugin-react": "^4.0.3",
+    "vite": "^4.4.5"
   }
 }
