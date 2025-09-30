@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { BookOpen, Target, Clock, TrendingUp, CheckCircle, Circle, Award, ArrowRight, Sparkles, Brain, Zap, Rocket, Star, ExternalLink, Youtube, Globe } from 'lucide-react';
+import { BookOpen, Target, Clock, TrendingUp, CheckCircle, Circle, Award, ArrowRight, Brain, Zap, Rocket, Star, ExternalLink, Youtube, Globe } from 'lucide-react';
 
 const AICourseBuilder = () => {
   const [step, setStep] = useState('input');
@@ -20,7 +20,6 @@ const AICourseBuilder = () => {
   const timeOptions = ['1-2 hours/week', '3-5 hours/week', '6-10 hours/week', '10+ hours/week'];
   const backgroundLevels = ['Complete Beginner', 'Some Knowledge', 'Intermediate', 'Advanced'];
 
-  // Enhanced domain validation
   const validateGoal = (goal) => {
     if (!goal.trim()) return 'Please enter a learning goal';
     
@@ -47,7 +46,6 @@ const AICourseBuilder = () => {
     }
   };
 
-  // Enhanced AI-POWERED ROADMAP GENERATION
   const generateRoadmapWithAI = async () => {
     const validation = validateGoal(learnerData.goal);
     if (validation) {
@@ -59,118 +57,15 @@ const AICourseBuilder = () => {
     setAiStatus('🧠 AI is analyzing your learning goals...');
 
     try {
-      const prompt = `You are an expert educational curriculum designer who creates hyper-personalized learning roadmaps for ANY subject.
-
-LEARNER PROFILE:
-- Learning Goal: ${learnerData.goal}
-- Current Background: ${learnerData.background}
-- Time Availability: ${learnerData.timeAvailable}
-- Learning Style: ${learnerData.learningStyle}
-
-CRITICAL INSTRUCTIONS:
-1. DOMAIN-SPECIFIC CONTEXT: Create content 100% focused on "${learnerData.goal}" - if it's cooking, create cooking curriculum; if music, create music curriculum.
-2. REAL RESOURCES: Suggest actual platforms, YouTube channels, books specific to the domain
-3. PERSONALIZATION: Consider background (${learnerData.background}) and learning style (${learnerData.learningStyle})
-
-MODULE GUIDELINES:
-- Create 3-6 modules that are 100% specific to "${learnerData.goal}"
-- Each module should have specific, actionable topics
-- Include practical projects where applicable
-
-RESOURCE GUIDELINES - MUST BE REAL:
-- YouTube: Suggest actual channels with creator names
-- Websites: Real platforms with URLs
-- Books: Real book titles with authors
-- Apps: Actual mobile/desktop apps
-
-EXAMPLES:
-For "cooking":
-- YouTube: "Joshua Weissman", "Binging with Babish"
-- Websites: "SeriousEats.com", "AllRecipes.com"
-- Books: "Salt Fat Acid Heat" by Samin Nosrat
-
-For "guitar":
-- YouTube: "JustinGuitar", "Marty Music"
-- Apps: "Yousician", "Ultimate Guitar"
-
-Respond with ONLY a valid JSON object in this exact format:
-
-{
-  "title": "Personalized Learning Path: ${learnerData.goal}",
-  "estimatedDuration": "X-Y months",
-  "personalizedMessage": "Custom encouragement message for this learner",
-  "modules": [
-    {
-      "id": 1,
-      "title": "Module Title Specific to ${learnerData.goal}",
-      "description": "Module description focused on ${learnerData.goal}",
-      "duration": "X-Y weeks",
-      "topics": ["specific topic 1", "specific topic 2", "specific topic 3", "specific topic 4"],
-      "difficulty": "Beginner",
-      "project": "Practical project idea"
-    }
-  ],
-  "resources": [
-    {
-      "type": "YouTube Channels",
-      "items": [
-        {"name": "Real Channel Name", "description": "What they teach", "url": "https://youtube.com/channel"},
-        {"name": "Another Real Channel", "description": "Specialty focus", "url": "https://youtube.com/channel"}
-      ]
-    },
-    {
-      "type": "Websites & Platforms",
-      "items": [
-        {"name": "Real Website", "description": "What it offers", "url": "https://website.com"},
-        {"name": "Learning Platform", "description": "Courses available", "url": "https://platform.com"}
-      ]
-    },
-    {
-      "type": "Books & Reading",
-      "items": [
-        {"name": "Real Book Title", "description": "Author Name - What it covers", "url": "https://amazon.com/book"},
-        {"name": "Another Book", "description": "Author - Focus area", "url": "https://amazon.com/book"}
-      ]
-    }
-  ]
-}`;
-
-      setAiStatus('🤖 Calling Claude AI...');
-
-      const response = await fetch("https://api.anthropic.com/v1/messages", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          model: "claude-sonnet-4-20250514",
-          max_tokens: 4000,
-          messages: [
-            { role: "user", content: prompt }
-          ]
-        })
-      });
-
-      if (!response.ok) {
-        throw new Error(`API request failed: ${response.status}`);
-      }
-
-      setAiStatus('✨ Processing AI response...');
-
-      const data = await response.json();
-      let aiResponse = data.content[0].text;
-
-      aiResponse = aiResponse.replace(/```json\n?/g, "").replace(/```\n?/g, "").trim();
-
-      const aiRoadmap = JSON.parse(aiResponse);
-
-      // Enhance with real resources
-      const enhancedRoadmap = enhanceWithRealResources(aiRoadmap, learnerData.goal);
+      // For demo purposes - using mock data since we don't have API keys
+      await new Promise(resolve => setTimeout(resolve, 2000));
       
-      setRoadmap(enhancedRoadmap);
+      // Mock AI response based on user input
+      const mockRoadmap = generateMockRoadmap(learnerData);
+      setRoadmap(mockRoadmap);
 
       const initialProgress = {};
-      enhancedRoadmap.modules.forEach(module => {
+      mockRoadmap.modules.forEach(module => {
         initialProgress[module.id] = { completed: false, score: 0 };
       });
       setProgress(initialProgress);
@@ -184,216 +79,184 @@ Respond with ONLY a valid JSON object in this exact format:
     } catch (error) {
       console.error("Error generating AI roadmap:", error);
       setAiStatus('❌ Error generating roadmap. Using enhanced fallback...');
-      
       await generateEnhancedFallbackRoadmap();
     }
   };
 
-  // Enhance AI response with real resource data
-  const enhanceWithRealResources = (roadmap, goal) => {
-    const goalLower = goal.toLowerCase();
-    const realResources = getRealResources(goalLower);
+  const generateMockRoadmap = (data) => {
+    const goal = data.goal.toLowerCase();
+    let domain = 'general';
     
-    let enhancedResources = [...roadmap.resources];
-    
-    // Enhance YouTube resources
-    if (realResources.youtube && enhancedResources.find(r => r.type === 'YouTube Channels')) {
-      enhancedResources = enhancedResources.map(resource => {
-        if (resource.type === 'YouTube Channels') {
-          return { ...resource, items: realResources.youtube };
-        }
-        return resource;
-      });
-    }
-    
-    // Enhance website resources
-    if (realResources.websites && enhancedResources.find(r => r.type.includes('Website'))) {
-      enhancedResources = enhancedResources.map(resource => {
-        if (resource.type.includes('Website') || resource.type.includes('Platform')) {
-          return { ...resource, items: realResources.websites };
-        }
-        return resource;
-      });
-    }
-
-    return {
-      ...roadmap,
-      resources: enhancedResources
-    };
-  };
-
-  // Real resource database
-  const getRealResources = (goal) => {
     if (goal.includes('cook') || goal.includes('culinary') || goal.includes('baking')) {
-      return {
-        youtube: [
-          { name: "Joshua Weissman", description: "Restaurant-quality techniques", url: "https://youtube.com/@JoshuaWeissman" },
-          { name: "Binging with Babish", description: "Movie & TV show recipes", url: "https://youtube.com/@babishculinaryuniverse" },
-          { name: "Ethan Chlebowski", description: "Practical everyday cooking", url: "https://youtube.com/@EthanChlebowski" }
-        ],
-        websites: [
-          { name: "Serious Eats", description: "Science-based cooking guides", url: "https://seriouseats.com" },
-          { name: "AllRecipes", description: "Community recipes & reviews", url: "https://allrecipes.com" },
-          { name: "Bon Appétit", description: "Professional recipes & techniques", url: "https://bonappetit.com" }
-        ]
-      };
-    } else if (goal.includes('guitar') || goal.includes('music')) {
-      return {
-        youtube: [
-          { name: "JustinGuitar", description: "Structured beginner lessons", url: "https://youtube.com/@JustinGuitar" },
-          { name: "Marty Music", description: "Song tutorials & techniques", url: "https://youtube.com/@MartyMusic" },
-          { name: "Paul Davids", description: "Advanced techniques & music theory", url: "https://youtube.com/@PaulDavids" }
-        ],
-        websites: [
-          { name: "Ultimate Guitar", description: "Tabs & chord charts", url: "https://ultimate-guitar.com" },
-          { name: "JustinGuitar.com", description: "Free structured courses", url: "https://justinguitar.com" }
-        ]
-      };
-    } else if (goal.includes('yoga') || goal.includes('meditation')) {
-      return {
-        youtube: [
-          { name: "Yoga With Adriene", description: "Beginner-friendly practices", url: "https://youtube.com/@yogawithadriene" },
-          { name: "Boho Beautiful", description: "Flow practices & meditation", url: "https://youtube.com/@BohoBeautiful" }
-        ],
-        websites: [
-          { name: "Yoga Journal", description: "Articles & pose guides", url: "https://yogajournal.com" },
-          { name: "DoYogaWithMe", description: "Free yoga classes", url: "https://doyogawithme.com" }
-        ]
-      };
+      domain = 'cooking';
+    } else if (goal.includes('guitar') || goal.includes('music') || goal.includes('piano')) {
+      domain = 'music';
+    } else if (goal.includes('yoga') || goal.includes('fitness') || goal.includes('workout')) {
+      domain = 'fitness';
+    } else if (goal.includes('programming') || goal.includes('coding') || goal.includes('web')) {
+      domain = 'programming';
     }
-    
-    return {};
+
+    const roadmaps = {
+      cooking: {
+        title: `Personalized Learning Path: ${data.goal}`,
+        estimatedDuration: calculateDuration(data.timeAvailable),
+        personalizedMessage: `Based on your ${data.background} background and ${data.learningStyle} learning style, I've created a culinary journey to master ${data.goal}.`,
+        modules: [
+          {
+            id: 1,
+            title: 'Kitchen Fundamentals & Safety',
+            description: 'Master essential kitchen skills, equipment knowledge, and food safety practices',
+            duration: '2-3 weeks',
+            topics: ['Knife skills and techniques', 'Kitchen equipment mastery', 'Food safety and sanitation', 'Basic measurements'],
+            difficulty: 'Beginner',
+            project: 'Prepare a complete meal with proper knife skills'
+          },
+          {
+            id: 2,
+            title: 'Basic Cooking Techniques',
+            description: 'Learn fundamental cooking methods and build core culinary skills',
+            duration: '3-4 weeks',
+            topics: ['Sautéing and pan-frying', 'Boiling and simmering', 'Roasting basics', 'Sauce making'],
+            difficulty: 'Beginner',
+            project: 'Create 3 different dishes using various cooking methods'
+          },
+          {
+            id: 3,
+            title: 'Flavor Development & Seasoning',
+            description: 'Understand how to build and balance flavors in your dishes',
+            duration: '3-4 weeks',
+            topics: ['Herbs and spices mastery', 'Building flavor profiles', 'Seasoning techniques', 'Sauce creation'],
+            difficulty: 'Intermediate',
+            project: 'Develop your own signature sauce or seasoning blend'
+          }
+        ],
+        resources: [
+          {
+            type: "YouTube Channels",
+            items: [
+              { name: "Joshua Weissman", description: "Restaurant-quality techniques", url: "https://youtube.com/@JoshuaWeissman" },
+              { name: "Binging with Babish", description: "Movie & TV show recipes", url: "https://youtube.com/@babishculinaryuniverse" }
+            ]
+          },
+          {
+            type: "Websites & Platforms",
+            items: [
+              { name: "Serious Eats", description: "Science-based cooking guides", url: "https://seriouseats.com" },
+              { name: "AllRecipes", description: "Community recipes & reviews", url: "https://allrecipes.com" }
+            ]
+          }
+        ]
+      },
+      music: {
+        title: `Personalized Learning Path: ${data.goal}`,
+        estimatedDuration: calculateDuration(data.timeAvailable),
+        personalizedMessage: `Based on your ${data.background} background and ${data.learningStyle} learning style, let's master ${data.goal} together.`,
+        modules: [
+          {
+            id: 1,
+            title: 'Music Fundamentals & Basics',
+            description: 'Learn basic music theory and instrument fundamentals',
+            duration: '3-4 weeks',
+            topics: ['Reading sheet music', 'Basic rhythm and timing', 'Music notation', 'Instrument care'],
+            difficulty: 'Beginner',
+            project: 'Learn and play 3 simple songs'
+          },
+          {
+            id: 2,
+            title: 'Basic Techniques & Practice',
+            description: 'Develop fundamental playing skills and practice routines',
+            duration: '4-5 weeks',
+            topics: ['Proper posture', 'Basic scales', 'Simple songs', 'Practice routines'],
+            difficulty: 'Beginner',
+            project: 'Create a 15-minute daily practice routine'
+          }
+        ],
+        resources: [
+          {
+            type: "YouTube Channels",
+            items: [
+              { name: "JustinGuitar", description: "Structured beginner lessons", url: "https://youtube.com/@JustinGuitar" },
+              { name: "Marty Music", description: "Song tutorials & techniques", url: "https://youtube.com/@MartyMusic" }
+            ]
+          },
+          {
+            type: "Websites & Platforms",
+            items: [
+              { name: "Ultimate Guitar", description: "Tabs & chord charts", url: "https://ultimate-guitar.com" },
+              { name: "JustinGuitar.com", description: "Free structured courses", url: "https://justinguitar.com" }
+            ]
+          }
+        ]
+      },
+      general: {
+        title: `Personalized Learning Path: ${data.goal}`,
+        estimatedDuration: calculateDuration(data.timeAvailable),
+        personalizedMessage: `Based on your ${data.background} background and ${data.learningStyle} learning style, I've created a custom path to master ${data.goal}.`,
+        modules: [
+          {
+            id: 1,
+            title: 'Foundations & Basics',
+            description: 'Build essential foundational knowledge in your chosen area',
+            duration: '2-3 weeks',
+            topics: ['Core concepts and terminology', 'Essential tools and resources', 'Basic principles', 'Getting started guide'],
+            difficulty: 'Beginner',
+            project: 'Complete a beginner-level project demonstrating basic understanding'
+          },
+          {
+            id: 2,
+            title: 'Core Skills Development',
+            description: 'Develop fundamental skills and practical knowledge',
+            duration: '3-4 weeks',
+            topics: ['Key techniques and methods', 'Practical applications', 'Skill-building exercises', 'Progress measurement'],
+            difficulty: 'Intermediate',
+            project: 'Build an intermediate project applying core skills'
+          },
+          {
+            id: 3,
+            title: 'Advanced Applications',
+            description: 'Apply your skills to more complex scenarios and projects',
+            duration: '4-5 weeks',
+            topics: ['Complex problem solving', 'Project implementation', 'Advanced techniques', 'Real-world applications'],
+            difficulty: 'Advanced',
+            project: 'Create a comprehensive final project showcasing all learned skills'
+          }
+        ],
+        resources: [
+          {
+            type: "Learning Resources",
+            items: [
+              { name: "YouTube Tutorials", description: "Video learning content", url: "https://youtube.com" },
+              { name: "Online Courses", description: "Structured learning paths", url: "https://coursera.org" }
+            ]
+          },
+          {
+            type: "Practice Platforms",
+            items: [
+              { name: "Interactive Exercises", description: "Hands-on practice", url: "#" },
+              { name: "Community Forums", description: "Connect with other learners", url: "#" }
+            ]
+          }
+        ]
+      }
+    };
+
+    return roadmaps[domain] || roadmaps.general;
   };
 
   const generateEnhancedFallbackRoadmap = async () => {
     await new Promise(resolve => setTimeout(resolve, 1000));
-
-    const goal = learnerData.goal.toLowerCase();
-    const modules = generateDomainSpecificModules(goal, learnerData);
-    const resources = generateDomainSpecificResources(goal, learnerData);
-    
-    setRoadmap({
-      title: `Personalized Learning Path: ${learnerData.goal}`,
-      estimatedDuration: calculateDuration(learnerData.timeAvailable),
-      personalizedMessage: `Based on your ${learnerData.background} background and ${learnerData.learningStyle} learning style, I've created a custom path to master ${learnerData.goal}.`,
-      modules: modules,
-      resources: resources
-    });
+    const mockRoadmap = generateMockRoadmap(learnerData);
+    setRoadmap(mockRoadmap);
 
     const initialProgress = {};
-    modules.forEach(module => {
+    mockRoadmap.modules.forEach(module => {
       initialProgress[module.id] = { completed: false, score: 0 };
     });
     setProgress(initialProgress);
 
     setStep('roadmap');
     setLoading(false);
-  };
-
-  const generateDomainSpecificModules = (goal, data) => {
-    // Your existing module generation logic but enhanced
-    const baseModules = [
-      {
-        id: 1,
-        title: getDomainSpecificTitle(goal, 'foundations'),
-        description: 'Build essential foundational knowledge and get started',
-        duration: '2-3 weeks',
-        topics: getDomainSpecificTopics(goal, 'foundations'),
-        difficulty: 'Beginner',
-        project: getDomainSpecificProject(goal, 'beginner')
-      },
-      {
-        id: 2,
-        title: getDomainSpecificTitle(goal, 'core'),
-        description: 'Master the fundamental principles and techniques',
-        duration: '3-4 weeks',
-        topics: getDomainSpecificTopics(goal, 'core'),
-        difficulty: 'Intermediate',
-        project: getDomainSpecificProject(goal, 'intermediate')
-      },
-      {
-        id: 3,
-        title: getDomainSpecificTitle(goal, 'advanced'),
-        description: 'Apply your skills to real-world scenarios and projects',
-        duration: '4-5 weeks',
-        topics: getDomainSpecificTopics(goal, 'advanced'),
-        difficulty: 'Advanced',
-        project: getDomainSpecificProject(goal, 'advanced')
-      }
-    ];
-
-    // Adjust based on background level
-    if (data.background === 'Complete Beginner') {
-      return baseModules;
-    } else if (data.background === 'Some Knowledge') {
-      return baseModules.slice(1);
-    } else if (data.background === 'Intermediate') {
-      return baseModules.slice(2);
-    } else {
-      return [baseModules[2]]; // Just advanced
-    }
-  };
-
-  const getDomainSpecificTitle = (goal, type) => {
-    if (goal.includes('cook') || goal.includes('culinary')) {
-      return type === 'foundations' ? 'Kitchen Fundamentals & Safety' :
-             type === 'core' ? 'Cooking Techniques Mastery' :
-             'Advanced Recipe Development';
-    } else if (goal.includes('guitar') || goal.includes('music')) {
-      return type === 'foundations' ? 'Music Fundamentals & Basic Chords' :
-             type === 'core' ? 'Playing Techniques & Rhythm' :
-             'Advanced Performance Skills';
-    }
-    return type === 'foundations' ? 'Foundations & Basics' :
-           type === 'core' ? 'Core Skills Development' :
-           'Advanced Applications';
-  };
-
-  const getDomainSpecificTopics = (goal, type) => {
-    if (goal.includes('cook') || goal.includes('culinary')) {
-      return type === 'foundations' ? ['Knife skills', 'Kitchen safety', 'Basic measurements', 'Equipment knowledge'] :
-             type === 'core' ? ['Sautéing techniques', 'Sauce making', 'Flavor balancing', 'Cooking methods'] :
-             ['Recipe creation', 'Menu planning', 'Advanced techniques', 'Presentation skills'];
-    }
-    // Add more domains as needed
-    return ['Core concepts', 'Practical applications', 'Skill development', 'Real-world practice'];
-  };
-
-  const getDomainSpecificProject = (goal, level) => {
-    if (goal.includes('cook') || goal.includes('culinary')) {
-      return level === 'beginner' ? 'Prepare a complete meal with 3 dishes' :
-             level === 'intermediate' ? 'Create your own recipe from scratch' :
-             'Plan and execute a multi-course dinner party';
-    }
-    return `Complete a ${level}-level project demonstrating your skills`;
-  };
-
-  const generateDomainSpecificResources = (goal, data) => {
-    const realResources = getRealResources(goal);
-    
-    return [
-      {
-        type: "YouTube Channels",
-        items: realResources.youtube || [
-          { name: "Beginner Tutorials", description: "Great for getting started", url: "#" },
-          { name: "Advanced Techniques", description: "For when you're ready to level up", url: "#" }
-        ]
-      },
-      {
-        type: "Websites & Platforms",
-        items: realResources.websites || [
-          { name: "Learning Platform", description: "Comprehensive courses", url: "#" },
-          { name: "Community Forum", description: "Connect with other learners", url: "#" }
-        ]
-      },
-      {
-        type: "Practice Resources",
-        items: [
-          { name: "Interactive Exercises", description: "Hands-on practice", url: "#" },
-          { name: "Project Ideas", description: "Real-world applications", url: "#" }
-        ]
-      }
-    ];
   };
 
   const calculateDuration = (timeAvailable) => {
@@ -424,9 +287,8 @@ Respond with ONLY a valid JSON object in this exact format:
 
   const renderInputForm = () => (
     <div className="max-w-4xl mx-auto">
-      {/* Futuristic Header - YOUR ORIGINAL STYLING */}
+      {/* Futuristic Header */}
       <div className="relative bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 text-white p-10 rounded-3xl overflow-hidden shadow-2xl border border-purple-500/20">
-        {/* Animated background elements */}
         <div className="absolute inset-0 opacity-20">
           <div className="absolute top-0 left-0 w-72 h-72 bg-cyan-500 rounded-full mix-blend-multiply filter blur-3xl animate-pulse"></div>
           <div className="absolute bottom-0 right-0 w-72 h-72 bg-purple-500 rounded-full mix-blend-multiply filter blur-3xl animate-pulse" style={{animationDelay: '1s'}}></div>
@@ -455,7 +317,7 @@ Respond with ONLY a valid JSON object in this exact format:
         </div>
       </div>
 
-      {/* Form Section - YOUR ORIGINAL STYLING */}
+      {/* Form Section */}
       <div className="bg-gradient-to-br from-slate-900 to-slate-800 p-8 rounded-3xl shadow-2xl mt-6 border border-slate-700/50 backdrop-blur-sm">
         <div className="space-y-6">
           <div>
@@ -589,7 +451,7 @@ Respond with ONLY a valid JSON object in this exact format:
               <div>
                 <p className="text-sm font-bold text-cyan-300 uppercase tracking-wide">Neural AI Engine</p>
                 <p className="text-xs text-gray-400 mt-1 leading-relaxed">
-                  Advanced Claude Sonnet 4 architecture analyzes your learning parameters and constructs 
+                  Advanced AI architecture analyzes your learning parameters and constructs 
                   a precision-optimized curriculum with domain-specific modules and adaptive resources.
                 </p>
               </div>
@@ -602,7 +464,7 @@ Respond with ONLY a valid JSON object in this exact format:
 
   const renderRoadmap = () => (
     <div className="max-w-6xl mx-auto">
-      {/* Futuristic Progress Header - YOUR ORIGINAL STYLING */}
+      {/* Futuristic Progress Header */}
       <div className="relative bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 text-white p-10 rounded-3xl mb-8 shadow-2xl border border-purple-500/20 overflow-hidden">
         <div className="absolute inset-0 opacity-10">
           <div className="absolute top-0 right-0 w-96 h-96 bg-cyan-500 rounded-full mix-blend-multiply filter blur-3xl animate-pulse"></div>
@@ -653,7 +515,7 @@ Respond with ONLY a valid JSON object in this exact format:
         </div>
       </div>
 
-      {/* Module Cards - ENHANCED WITH PROJECTS */}
+      {/* Module Cards */}
       <div className="space-y-5">
         {roadmap.modules.map((module, index) => (
           <div 
@@ -723,7 +585,7 @@ Respond with ONLY a valid JSON object in this exact format:
         ))}
       </div>
 
-      {/* Enhanced Resources Section with Real Links */}
+      {/* Enhanced Resources Section */}
       <div className="mt-10 bg-gradient-to-br from-slate-900 to-slate-800 rounded-2xl shadow-2xl p-8 border border-slate-700">
         <h3 className="text-2xl font-black mb-6 flex items-center gap-3 bg-gradient-to-r from-cyan-400 to-purple-400 bg-clip-text text-transparent">
           <BookOpen className="w-6 h-6 text-cyan-400" />
@@ -775,4 +637,33 @@ Respond with ONLY a valid JSON object in this exact format:
           setAiStatus('');
           setValidationError('');
         }}
-        className="mt-8 w-full bg-gradient-to-r from-slate-800 to-slate-700 text-cyan
+        className="mt-8 w-full bg-gradient-to-r from-slate-800 to-slate-700 text-cyan-400 py-4 rounded-xl font-bold hover:from-slate-700 hover:to-slate-600 transition-all border border-slate-600 uppercase tracking-wide"
+      >
+        Create New Learning Path
+      </button>
+    </div>
+  );
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-purple-950 to-slate-950 p-6">
+      <div className="fixed inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-purple-900/20 via-transparent to-transparent pointer-events-none"></div>
+      <div className="relative z-10">
+        {step === 'input' && renderInputForm()}
+        {step === 'roadmap' && renderRoadmap()}
+      </div>
+      
+      <style jsx>{`
+        @keyframes shake {
+          0%, 100% { transform: translateX(0); }
+          25% { transform: translateX(-5px); }
+          75% { transform: translateX(5px); }
+        }
+        .shake-animation {
+          animation: shake 0.3s ease-in-out;
+        }
+      `}</style>
+    </div>
+  );
+};
+
+export default AICourseBuilder;
