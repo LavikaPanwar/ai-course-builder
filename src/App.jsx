@@ -35,30 +35,28 @@ const LIAA = () => {
   };
 
   // 🚀 REAL AI ROADMAP GENERATION
-  const generateRoadmapWithAI = async () => {
-    const validation = validateGoal(learnerData.goal);
-    if (validation) {
-      setValidationError(validation);
-      return;
-    }
-
-    setLoading(true);
-    setAiStatus('Analyzing your learning profile...');
-
-    try {
-      // Simulate AI API call with realistic processing
-      const aiResponse = await simulateAIProcessing(learnerData);
-      setRoadmap(aiResponse);
-      setStep('roadmap');
-    } catch (error) {
-      console.error("AI generation failed:", error);
-      // Fallback to intelligent mock data
-      setRoadmap(generateIntelligentMockRoadmap(learnerData));
-      setStep('roadmap');
-    } finally {
-      setLoading(false);
-    }
-  };
+  // In your generateRoadmapWithAI function:
+const generateRoadmapWithAI = async () => {
+  setLoading(true);
+  
+  try {
+    const response = await fetch('/api/generate-roadmap', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(learnerData)
+    });
+    
+    const aiRoadmap = await response.json();
+    setRoadmap(aiRoadmap);
+    setStep('roadmap');
+  } catch (error) {
+    // Fallback to intelligent mock data
+    setRoadmap(generateIntelligentMockRoadmap(learnerData));
+    setStep('roadmap');
+  } finally {
+    setLoading(false);
+  }
+};
 
   // 🧠 INTELLIGENT ROADMAP GENERATION
   const simulateAIProcessing = async (data) => {
