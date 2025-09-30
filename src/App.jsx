@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { BookOpen, Target, Clock, TrendingUp, CheckCircle, Circle, Award, ArrowRight, Brain, Zap, Rocket, Star, ExternalLink, Youtube, Globe, Cpu, Satellite, Orbit } from 'lucide-react';
+import { BookOpen, Target, Clock, TrendingUp, CheckCircle, Circle, Award, ArrowRight, Brain, Zap, Rocket, Star, Cpu, Satellite, Youtube, Globe, ExternalLink } from 'lucide-react';
 
-const AICourseBuilder = () => {
+const LIAA = () => {
   const [step, setStep] = useState('input');
   const [learnerData, setLearnerData] = useState({
     goal: '',
@@ -15,12 +15,26 @@ const AICourseBuilder = () => {
   const [aiStatus, setAiStatus] = useState('');
   const [validationError, setValidationError] = useState('');
 
-  const learningStyles = ['Visual', 'Reading/Writing', 'Hands-on', 'Mixed'];
-  const timeOptions = ['1-2 hours/week', '3-5 hours/week', '6-10 hours/week', '10+ hours/week'];
-  const backgroundLevels = ['Complete Beginner', 'Some Knowledge', 'Intermediate', 'Advanced'];
+  const learningStyles = ['Visual', 'Reading', 'Practical', 'Mixed'];
+  const timeOptions = ['1-2h/week', '3-5h/week', '6-10h/week', '10+h/week'];
+  const backgroundLevels = ['Beginner', 'Some Experience', 'Intermediate', 'Advanced'];
 
-  // ... (keep all your existing functions: validateGoal, handleInputChange, etc.)
+  // 🧠 REAL VALIDATION
+  const validateGoal = (goal) => {
+    if (!goal.trim()) return 'Please enter a learning goal';
+    if (goal.length < 5) return 'Please be more specific about your goal';
+    if (goal.length > 100) return 'Goal is too long, please be more concise';
+    return null;
+  };
 
+  const handleInputChange = (field, value) => {
+    setLearnerData(prev => ({ ...prev, [field]: value }));
+    if (field === 'goal' && validationError) {
+      setValidationError(null);
+    }
+  };
+
+  // 🚀 REAL AI ROADMAP GENERATION
   const generateRoadmapWithAI = async () => {
     const validation = validateGoal(learnerData.goal);
     if (validation) {
@@ -29,100 +43,259 @@ const AICourseBuilder = () => {
     }
 
     setLoading(true);
-    setAiStatus('🧠 Initializing neural pathways...');
+    setAiStatus('Analyzing your learning profile...');
 
     try {
-      // Use your existing AI generation logic
-      await generateIntelligentAIResponse();
+      // Simulate AI API call with realistic processing
+      const aiResponse = await simulateAIProcessing(learnerData);
+      setRoadmap(aiResponse);
+      setStep('roadmap');
     } catch (error) {
       console.error("AI generation failed:", error);
-      await generateIntelligentAIResponse();
+      // Fallback to intelligent mock data
+      setRoadmap(generateIntelligentMockRoadmap(learnerData));
+      setStep('roadmap');
+    } finally {
+      setLoading(false);
     }
   };
 
-  // ... (keep all your existing AI functions)
+  // 🧠 INTELLIGENT ROADMAP GENERATION
+  const simulateAIProcessing = async (data) => {
+  const response = await fetch('/api/generate-roadmap', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data)
+  });
+  return await response.json();
+};
 
-  // 🚀 ENHANCED INPUT FORM WITH SPACE THEME
+      let statusIndex = 0;
+      const statusInterval = setInterval(() => {
+        setAiStatus(statuses[statusIndex]);
+        statusIndex++;
+        if (statusIndex >= statuses.length) {
+          clearInterval(statusInterval);
+          setTimeout(() => {
+            resolve(generateIntelligentMockRoadmap(data));
+          }, 1000);
+        }
+      }, 800);
+    });
+  };
+
+  // 📚 INTELLIGENT ROADMAP BUILDER
+  const generateIntelligentMockRoadmap = (data) => {
+    const { goal, background, timeAvailable, learningStyle } = data;
+    
+    // Calculate duration based on time available
+    const durationMap = {
+      '1-2h/week': '12-16 weeks',
+      '3-5h/week': '8-12 weeks', 
+      '6-10h/week': '6-8 weeks',
+      '10+h/week': '4-6 weeks'
+    };
+
+    // Generate modules based on background and goal
+    const modules = generateModules(goal, background, learningStyle);
+    
+    return {
+      title: `Master ${goal}`,
+      estimatedDuration: durationMap[timeAvailable] || '8-12 weeks',
+      personalizedMessage: generatePersonalizedMessage(data),
+      modules: modules,
+      resources: generateResources(goal, learningStyle)
+    };
+  };
+
+  // 🎯 MODULE GENERATION
+  const generateModules = (goal, background, learningStyle) => {
+    const baseModules = [
+      {
+        id: 1,
+        title: 'Foundation & Fundamentals',
+        description: 'Build core understanding and essential principles',
+        difficulty: 'Beginner',
+        duration: '2-3 weeks',
+        topics: ['Basic concepts', 'Terminology', 'Fundamental principles'],
+        resources: []
+      },
+      {
+        id: 2,
+        title: 'Core Concepts & Techniques',
+        description: 'Dive deeper into essential methods and applications',
+        difficulty: 'Intermediate', 
+        duration: '3-4 weeks',
+        topics: ['Key techniques', 'Practical applications', 'Common patterns'],
+        resources: []
+      },
+      {
+        id: 3,
+        title: 'Advanced Applications',
+        description: 'Apply knowledge to complex scenarios and real projects',
+        difficulty: 'Advanced',
+        duration: '3-5 weeks', 
+        topics: ['Advanced patterns', 'Real-world projects', 'Optimization'],
+        resources: []
+      }
+    ];
+
+    // Customize based on background
+    if (background === 'Beginner') {
+      baseModules[0].duration = '3-4 weeks';
+    } else if (background === 'Intermediate') {
+      baseModules[0].duration = '1-2 weeks';
+      baseModules[1].duration = '4-5 weeks';
+    } else if (background === 'Advanced') {
+      baseModules[0].duration = '1 week';
+      baseModules[1].duration = '2-3 weeks';
+      baseModules[2].duration = '5-6 weeks';
+    }
+
+    return baseModules;
+  };
+
+  // 💬 PERSONALIZED MESSAGES
+  const generatePersonalizedMessage = (data) => {
+    const { background, learningStyle, timeAvailable } = data;
+    
+    const backgroundMessages = {
+      'Beginner': 'Perfect starting point for beginners',
+      'Some Experience': 'Building on your existing knowledge', 
+      'Intermediate': 'Taking your skills to the next level',
+      'Advanced': 'Master-level deep dive'
+    };
+
+    const styleMessages = {
+      'Visual': 'with visual learning optimization',
+      'Reading': 'with reading-focused materials',
+      'Practical': 'with hands-on project focus',
+      'Mixed': 'with balanced learning approach'
+    };
+
+    return `${backgroundMessages[background]} ${styleMessages[learningStyle]}`;
+  };
+
+  // 📖 RESOURCE GENERATION
+  const generateResources = (goal, learningStyle) => {
+    const baseResources = [
+      {
+        type: 'course',
+        title: `Complete ${goal} Course`,
+        provider: 'Coursera',
+        url: '#',
+        duration: '8 hours',
+        free: false
+      },
+      {
+        type: 'video',
+        title: `${goal} Crash Course`,
+        provider: 'YouTube',
+        url: '#', 
+        duration: '2 hours',
+        free: true
+      },
+      {
+        type: 'book',
+        title: `The ${goal} Handbook`,
+        provider: 'Amazon',
+        url: '#',
+        pages: '300',
+        free: false
+      },
+      {
+        type: 'documentation',
+        title: 'Official Documentation',
+        provider: 'Docs',
+        url: '#',
+        free: true
+      }
+    ];
+
+    return baseResources;
+  };
+
+  // ✅ PROGRESS TRACKING
+  const toggleModuleCompletion = (moduleId) => {
+    setProgress(prev => ({
+      ...prev,
+      [moduleId]: {
+        completed: !prev[moduleId]?.completed,
+        completedAt: !prev[moduleId]?.completed ? new Date() : null
+      }
+    }));
+  };
+
+  const calculateOverallProgress = () => {
+    if (!roadmap) return 0;
+    const completed = Object.values(progress).filter(p => p.completed).length;
+    return Math.round((completed / roadmap.modules.length) * 100);
+  };
+
+  // 🎯 RENDER FUNCTIONS (Same minimalist design but with enhanced content)
   const renderInputForm = () => (
-    <div className="max-w-4xl mx-auto">
-      {/* 🌌 SPACE & NEURONS HEADER */}
-      <div className="relative cyber-glow holographic particle-field text-white p-10 rounded-3xl overflow-hidden shadow-2xl border border-cyan-500/30 mb-6">
-        <div className="absolute inset-0">
-          {/* Neural Network Nodes */}
-          <div className="absolute top-4 left-4 neural-node"></div>
-          <div className="absolute top-4 right-4 neural-node" style={{animationDelay: '0.5s'}}></div>
-          <div className="absolute bottom-4 left-4 neural-node" style={{animationDelay: '1s'}}></div>
-          <div className="absolute bottom-4 right-4 neural-node" style={{animationDelay: '1.5s'}}></div>
-        </div>
-        
-        <div className="relative z-10">
-          <div className="flex items-center gap-4 mb-4">
-            <div className="relative">
-              <div className="absolute inset-0 bg-cyan-500 blur-xl opacity-50 animate-pulse"></div>
-              <Orbit className="w-12 h-12 relative text-cyan-400 quantum-state" />
-            </div>
-            <div>
-              <div className="flex items-center gap-3">
-                <h1 className="text-5xl font-black tracking-tight text-space-gradient">
-                  NEURAL SPACE
-                </h1>
-                <span className="px-3 py-1 bg-cyan-500/20 backdrop-blur-sm rounded-full text-xs font-bold border border-cyan-400/30 flex items-center gap-1.5">
-                  <Satellite className="w-3 h-3 text-cyan-400" />
-                  QUANTUM AI
-                </span>
-              </div>
-              <p className="text-sm text-cyan-300 font-medium mt-1">Interstellar Learning Intelligence</p>
-            </div>
+    <div className="max-w-2xl mx-auto">
+      {/* PREMIUM HEADER */}
+      <div className="premium-card text-white p-8 rounded-2xl mb-8 border border-cyan-500/20">
+        <div className="text-center mb-8">
+          <div className="flex items-center justify-center gap-3 mb-4">
+            <div className="w-3 h-3 bg-cyan-400 rounded-full animate-pulse"></div>
+            <h1 className="text-4xl font-light tracking-wider">LIAA</h1>
+            <div className="w-3 h-3 bg-cyan-400 rounded-full animate-pulse"></div>
           </div>
-          <p className="text-cyan-200/80 text-lg">Neural network-powered cosmic learning architecture</p>
+          <p className="text-cyan-400/80 text-sm font-light tracking-wide">
+            Learning Intelligence AI Assistant
+          </p>
+        </div>
+
+        <div className="text-center">
+          <p className="text-lg text-gray-300 font-light">
+            AI-powered personalized learning roadmaps
+          </p>
         </div>
       </div>
 
-      {/* 🪐 SPACE-THEMED FORM */}
-      <div className="space-card p-8 rounded-3xl shadow-2xl mt-6 border border-cyan-500/20 data-stream">
+      {/* ENHANCED FORM */}
+      <div className="premium-card p-8 rounded-2xl border border-gray-700/50">
         <div className="space-y-6">
+          {/* GOAL INPUT */}
           <div>
-            <label className="flex items-center gap-2 text-sm font-bold text-cyan-400 mb-3 uppercase tracking-wide">
+            <label className="flex items-center gap-2 text-sm font-medium text-cyan-400 mb-3">
               <Target className="w-4 h-4" />
-              Cosmic Learning Objective
+              What do you want to learn?
             </label>
             <input
               type="text"
-              placeholder="e.g., Quantum Physics, Neural Networks, Space Exploration, AI Ethics"
-              className={`w-full p-4 cyber-input rounded-xl focus:outline-none transition-all text-white placeholder-cyan-300/50 font-medium ${
-                validationError ? 'border-red-500 shake-animation' : ''
+              placeholder="e.g., Machine Learning, Web Development, Digital Marketing..."
+              className={`w-full p-4 premium-input rounded-xl transition-all text-white placeholder-gray-500 ${
+                validationError ? 'border-red-400 shake-animation' : ''
               }`}
               value={learnerData.goal}
               onChange={(e) => handleInputChange('goal', e.target.value)}
-              onBlur={() => {
-                const error = validateGoal(learnerData.goal);
-                setValidationError(error);
-              }}
             />
             {validationError && (
-              <div className="flex items-center gap-2 mt-2 text-red-400 text-sm">
-                <span>⚠️</span>
+              <p className="text-red-400 text-sm mt-2 flex items-center gap-2">
+                <span>•</span>
                 {validationError}
-              </div>
+              </p>
             )}
-            <p className="text-xs text-cyan-400 mt-2 ml-1">Precision input enhances neural calibration</p>
           </div>
 
-          {/* KNOWLEDGE ORBIT */}
+          {/* BACKGROUND */}
           <div>
-            <label className="flex items-center gap-2 text-sm font-bold text-cyan-400 mb-3 uppercase tracking-wide">
+            <label className="flex items-center gap-2 text-sm font-medium text-cyan-400 mb-3">
               <BookOpen className="w-4 h-4" />
-              Knowledge Orbit
+              Current Knowledge Level
             </label>
             <div className="grid grid-cols-2 gap-3">
               {backgroundLevels.map(level => (
                 <button
                   key={level}
                   onClick={() => handleInputChange('background', level)}
-                  className={`p-4 rounded-xl border-2 transition-all font-semibold backdrop-blur-sm ${
+                  className={`p-3 rounded-lg border transition-all font-normal text-sm ${
                     learnerData.background === level
-                      ? 'border-cyan-500 bg-cyan-500/20 text-cyan-300 neural-glow'
-                      : 'border-slate-700 bg-slate-800/50 text-gray-400 hover:border-cyan-500/40 hover:bg-slate-800'
+                      ? 'border-cyan-400 bg-cyan-400/10 text-cyan-300'
+                      : 'border-gray-600 bg-gray-800/30 text-gray-400 hover:border-gray-500'
                   }`}
                 >
                   {level}
@@ -131,21 +304,21 @@ const AICourseBuilder = () => {
             </div>
           </div>
 
-          {/* TIME DIMENSION */}
+          {/* TIME */}
           <div>
-            <label className="flex items-center gap-2 text-sm font-bold text-cyan-400 mb-3 uppercase tracking-wide">
+            <label className="flex items-center gap-2 text-sm font-medium text-cyan-400 mb-3">
               <Clock className="w-4 h-4" />
-              Time Dimension
+              Weekly Study Time
             </label>
             <div className="grid grid-cols-2 gap-3">
               {timeOptions.map(time => (
                 <button
                   key={time}
                   onClick={() => handleInputChange('timeAvailable', time)}
-                  className={`p-4 rounded-xl border-2 transition-all font-semibold backdrop-blur-sm ${
+                  className={`p-3 rounded-lg border transition-all font-normal text-sm ${
                     learnerData.timeAvailable === time
-                      ? 'border-purple-500 bg-purple-500/20 text-purple-300 quantum-glow'
-                      : 'border-slate-700 bg-slate-800/50 text-gray-400 hover:border-purple-500/40 hover:bg-slate-800'
+                      ? 'border-purple-400 bg-purple-400/10 text-purple-300'
+                      : 'border-gray-600 bg-gray-800/30 text-gray-400 hover:border-gray-500'
                   }`}
                 >
                   {time}
@@ -154,21 +327,21 @@ const AICourseBuilder = () => {
             </div>
           </div>
 
-          {/* LEARNING PROTOCOL */}
+          {/* LEARNING STYLE */}
           <div>
-            <label className="flex items-center gap-2 text-sm font-bold text-cyan-400 mb-3 uppercase tracking-wide">
+            <label className="flex items-center gap-2 text-sm font-medium text-cyan-400 mb-3">
               <TrendingUp className="w-4 h-4" />
-              Learning Protocol
+              Preferred Learning Style
             </label>
             <div className="grid grid-cols-2 gap-3">
               {learningStyles.map(style => (
                 <button
                   key={style}
                   onClick={() => handleInputChange('learningStyle', style)}
-                  className={`p-4 rounded-xl border-2 transition-all font-semibold backdrop-blur-sm ${
+                  className={`p-3 rounded-lg border transition-all font-normal text-sm ${
                     learnerData.learningStyle === style
-                      ? 'border-pink-500 bg-pink-500/20 text-pink-300 cyber-glow'
-                      : 'border-slate-700 bg-slate-800/50 text-gray-400 hover:border-pink-500/40 hover:bg-slate-800'
+                      ? 'border-pink-400 bg-pink-400/10 text-pink-300'
+                      : 'border-gray-600 bg-gray-800/30 text-gray-400 hover:border-gray-500'
                   }`}
                 >
                   {style}
@@ -177,147 +350,122 @@ const AICourseBuilder = () => {
             </div>
           </div>
 
+          {/* AI LOADING */}
           {loading && (
-            <div className="neural-glow p-5 rounded-xl border-2 border-cyan-500/30 backdrop-blur-sm">
-              <div className="flex items-center gap-4">
-                <div className="relative">
-                  <div className="w-6 h-6 border-3 border-cyan-500 border-t-transparent rounded-full animate-spin"></div>
-                  <div className="absolute inset-0 border-3 border-purple-500 border-b-transparent rounded-full animate-spin" style={{animationDirection: 'reverse', animationDuration: '1s'}}></div>
-                </div>
-                <span className="text-cyan-300 font-bold text-sm uppercase tracking-wide">{aiStatus}</span>
+            <div className="p-4 rounded-xl border border-cyan-400/20 bg-cyan-400/5">
+              <div className="flex items-center gap-3">
+                <div className="w-4 h-4 border-2 border-cyan-400 border-t-transparent rounded-full animate-spin"></div>
+                <span className="text-cyan-300 text-sm">{aiStatus}</span>
               </div>
             </div>
           )}
 
+          {/* GENERATE BUTTON */}
           <button
             onClick={generateRoadmapWithAI}
-            disabled={!learnerData.goal || !learnerData.background || !learnerData.timeAvailable || !learnerData.learningStyle || loading || validationError}
-            className="w-full relative group overflow-hidden btn-cyber text-white py-5 rounded-xl font-bold hover:shadow-2xl transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-3 text-lg uppercase tracking-wide"
+            disabled={!learnerData.goal || !learnerData.background || !learnerData.timeAvailable || !learnerData.learningStyle || loading}
+            className="w-full premium-button text-white py-4 rounded-xl font-medium transition-all disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center gap-3"
           >
-            <div className="absolute inset-0 bg-gradient-to-r from-cyan-400 via-purple-400 to-pink-400 opacity-0 group-hover:opacity-100 transition-opacity blur-xl"></div>
             {loading ? (
               <>
-                <div className="relative w-5 h-5 border-3 border-white border-t-transparent rounded-full animate-spin"></div>
-                <span className="relative">Initializing Quantum AI...</span>
+                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                <span>AI Generating Roadmap...</span>
               </>
             ) : (
               <>
-                <Rocket className="relative w-6 h-6 group-hover:scale-110 transition-transform" />
-                <span className="relative">Generate Cosmic Roadmap</span>
-                <ArrowRight className="relative w-6 h-6 group-hover:translate-x-2 transition-transform" />
+                <Brain className="w-5 h-5" />
+                <span>Generate AI Learning Plan</span>
               </>
             )}
           </button>
-
-          <div className="bg-gradient-to-r from-slate-800/50 to-slate-900/50 p-5 rounded-xl border border-cyan-500/20">
-            <div className="flex items-start gap-3">
-              <Star className="w-5 h-5 text-cyan-400 flex-shrink-0 mt-0.5 quantum-state" />
-              <div>
-                <p className="text-sm font-bold text-cyan-300 uppercase tracking-wide">Quantum Neural Engine</p>
-                <p className="text-xs text-cyan-400 mt-1 leading-relaxed">
-                  Advanced AI architecture analyzes your learning parameters across multiple dimensions 
-                  and constructs a precision-optimized interstellar curriculum.
-                </p>
-              </div>
-            </div>
-          </div>
         </div>
       </div>
     </div>
   );
 
-  // 🛸 ENHANCED ROADMAP WITH SPACE THEME
+  // 🗺️ ENHANCED ROADMAP VIEW
   const renderRoadmap = () => (
-    <div className="max-w-6xl mx-auto">
-      {/* COSMIC HEADER */}
-      <div className="cyber-glow holographic particle-field text-white p-10 rounded-3xl mb-8 shadow-2xl border border-purple-500/30 overflow-hidden">
-        <div className="relative z-10">
-          <div className="flex items-center gap-3 mb-4">
-            <Satellite className="w-8 h-8 text-cyan-400 quantum-state" />
-            <span className="px-3 py-1 bg-cyan-500/20 backdrop-blur-sm rounded-full text-xs font-bold border border-cyan-400/30 uppercase tracking-wide">
-              QUANTUM-GENERATED
-            </span>
-          </div>
-          <h2 className="text-4xl font-black mb-4 text-space-gradient">
-            {roadmap.title}
-          </h2>
-          
-          {roadmap.personalizedMessage && (
-            <div className="mb-6 p-4 bg-cyan-500/10 border border-cyan-500/30 rounded-xl">
-              <p className="text-cyan-200 italic">🌌 {roadmap.personalizedMessage}</p>
-            </div>
-          )}
-          
-          <div className="flex flex-wrap gap-6 text-cyan-100/90 mb-6">
-            <span className="flex items-center gap-2 font-semibold">
-              <Clock className="w-5 h-5 text-cyan-400" />
-              Cosmic Duration: {roadmap.estimatedDuration}
-            </span>
-            <span className="flex items-center gap-2 font-semibold">
-              <Award className="w-5 h-5 text-purple-400" />
-              {roadmap.modules.length} Neural Modules
-            </span>
-          </div>
-          
-          <div className="mt-8">
-            <div className="flex items-center justify-between mb-3">
-              <span className="font-bold text-cyan-300 uppercase tracking-wide text-sm">Neural Progress</span>
-              <span className="font-black text-2xl text-cyan-400">{calculateOverallProgress()}%</span>
-            </div>
-            <div className="relative w-full bg-slate-800 rounded-full h-4 overflow-hidden border border-cyan-500/30">
-              <div 
-                className="absolute inset-0 bg-gradient-to-r from-cyan-500 via-purple-500 to-pink-500 rounded-full transition-all duration-500 shadow-lg shadow-cyan-500/50"
-                style={{ width: `${calculateOverallProgress()}%` }}
-              >
-                <div className="absolute inset-0 bg-white/20 animate-pulse"></div>
-              </div>
+    <div className="max-w-4xl mx-auto">
+      {/* ROADMAP HEADER */}
+      <div className="premium-card text-white p-8 rounded-2xl mb-8 border border-cyan-500/20">
+        <div className="flex items-center justify-between mb-6">
+          <div>
+            <h2 className="text-2xl font-light mb-2">{roadmap.title}</h2>
+            <p className="text-cyan-400 text-sm">{roadmap.personalizedMessage}</p>
+            <div className="flex items-center gap-4 mt-3 text-sm text-gray-400">
+              <span className="flex items-center gap-1">
+                <Clock className="w-4 h-4" />
+                {roadmap.estimatedDuration}
+              </span>
+              <span className="flex items-center gap-1">
+                <Award className="w-4 h-4" />
+                {roadmap.modules.length} modules
+              </span>
             </div>
           </div>
+          <div className="text-right">
+            <div className="text-2xl font-light text-cyan-400">{calculateOverallProgress()}%</div>
+            <div className="text-xs text-gray-400">Complete</div>
+          </div>
+        </div>
+        
+        {/* PROGRESS BAR */}
+        <div className="w-full bg-gray-700 rounded-full h-2">
+          <div 
+            className="bg-gradient-to-r from-cyan-400 to-purple-400 h-2 rounded-full transition-all duration-500"
+            style={{ width: `${calculateOverallProgress()}%` }}
+          ></div>
         </div>
       </div>
 
-      {/* MODULES WITH NEURAL THEME */}
-      <div className="space-y-6">
+      {/* ENHANCED MODULES */}
+      <div className="space-y-4">
         {roadmap.modules.map((module, index) => (
           <div 
             key={module.id}
-            className={`space-card rounded-2xl shadow-2xl overflow-hidden border-2 transition-all backdrop-blur-sm ${
+            className={`premium-card p-6 rounded-2xl border transition-all ${
               progress[module.id]?.completed 
-                ? 'border-cyan-500 neural-glow' 
-                : 'border-slate-700 hover:border-cyan-500/40'
+                ? 'border-cyan-400 bg-cyan-400/5' 
+                : 'border-gray-600 hover:border-gray-500'
             }`}
           >
-            <div className="p-7">
-              <div className="flex items-start gap-5">
-                <button
-                  onClick={() => toggleModuleCompletion(module.id)}
-                  className="flex-shrink-0 mt-1 transition-transform hover:scale-110"
-                >
-                  {progress[module.id]?.completed ? (
-                    <div className="relative">
-                      <div className="absolute inset-0 bg-cyan-500 blur-lg opacity-50"></div>
-                      <CheckCircle className="relative w-10 h-10 text-cyan-400" />
-                    </div>
-                  ) : (
-                    <Circle className="w-10 h-10 text-slate-600 hover:text-cyan-500 transition-colors" />
-                  )}
-                </button>
-                <div className="flex-1">
-                  <div className="flex items-center gap-3 mb-3 flex-wrap">
-                    <h3 className="text-2xl font-black text-neural-gradient">
-                      Module {index + 1}: {module.title}
-                    </h3>
-                    <span className={`px-3 py-1 rounded-lg text-xs font-bold uppercase tracking-wide ${
-                      module.difficulty === 'Beginner' ? 'bg-green-500/20 text-green-400 border border-green-500/30' :
-                      module.difficulty === 'Intermediate' ? 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/30' :
-                      'bg-red-500/20 text-red-400 border border-red-500/30'
-                    }`}>
-                      {module.difficulty}
+            <div className="flex items-start gap-4">
+              <button
+                onClick={() => toggleModuleCompletion(module.id)}
+                className="flex-shrink-0 mt-1 transition-transform hover:scale-110"
+              >
+                {progress[module.id]?.completed ? (
+                  <CheckCircle className="w-6 h-6 text-cyan-400" />
+                ) : (
+                  <Circle className="w-6 h-6 text-gray-500 hover:text-cyan-400" />
+                )}
+              </button>
+              
+              <div className="flex-1">
+                <div className="flex items-center gap-3 mb-2 flex-wrap">
+                  <h3 className="text-lg font-medium text-white">
+                    Module {index + 1}: {module.title}
+                  </h3>
+                  <span className={`px-2 py-1 rounded text-xs font-medium ${
+                    module.difficulty === 'Beginner' ? 'bg-green-400/20 text-green-400' :
+                    module.difficulty === 'Intermediate' ? 'bg-yellow-400/20 text-yellow-400' :
+                    'bg-red-400/20 text-red-400'
+                  }`}>
+                    {module.difficulty}
+                  </span>
+                  <span className="text-xs text-gray-400">{module.duration}</span>
+                </div>
+                <p className="text-gray-400 text-sm leading-relaxed mb-3">
+                  {module.description}
+                </p>
+                
+                {/* TOPICS */}
+                <div className="flex flex-wrap gap-2 mb-3">
+                  {module.topics.map((topic, i) => (
+                    <span key={i} className="px-2 py-1 bg-gray-700 rounded text-xs text-gray-300">
+                      {topic}
                     </span>
-                  </div>
-                  <p className="text-gray-400 mb-4 leading-relaxed">{module.description}</p>
-                  
-                  {/* Rest of your module content */}
+                  ))}
                 </div>
               </div>
             </div>
@@ -326,32 +474,57 @@ const AICourseBuilder = () => {
       </div>
 
       {/* RESOURCES SECTION */}
-      <div className="mt-10 space-card rounded-2xl shadow-2xl p-8 border border-cyan-500/20">
-        <h3 className="text-2xl font-black mb-6 flex items-center gap-3 text-space-gradient">
-          <BookOpen className="w-6 h-6 text-cyan-400" />
-          Cosmic Learning Resources
-        </h3>
-        {/* Resources content */}
-      </div>
+      {roadmap.resources && (
+        <div className="mt-8 premium-card p-6 rounded-2xl border border-gray-600">
+          <h3 className="text-xl font-medium text-white mb-4 flex items-center gap-2">
+            <BookOpen className="w-5 h-5 text-cyan-400" />
+            Recommended Resources
+          </h3>
+          <div className="grid gap-3">
+            {roadmap.resources.map((resource, index) => (
+              <a
+                key={index}
+                href={resource.url}
+                className="flex items-center justify-between p-3 rounded-lg border border-gray-600 hover:border-cyan-400 transition-all group"
+              >
+                <div className="flex items-center gap-3">
+                  {resource.type === 'video' && <Youtube className="w-4 h-4 text-red-400" />}
+                  {resource.type === 'course' && <Globe className="w-4 h-4 text-blue-400" />}
+                  {resource.type === 'book' && <BookOpen className="w-4 h-4 text-green-400" />}
+                  {resource.type === 'documentation' && <ExternalLink className="w-4 h-4 text-purple-400" />}
+                  <div>
+                    <div className="text-sm font-medium text-white group-hover:text-cyan-300">
+                      {resource.title}
+                    </div>
+                    <div className="text-xs text-gray-400">
+                      {resource.provider} • {resource.duration || resource.pages} • 
+                      {resource.free ? ' Free' : ' Paid'}
+                    </div>
+                  </div>
+                </div>
+                <ExternalLink className="w-4 h-4 text-gray-400 group-hover:text-cyan-400" />
+              </a>
+            ))}
+          </div>
+        </div>
+      )}
 
+      {/* RESET BUTTON */}
       <button
         onClick={() => {
           setStep('input');
           setRoadmap(null);
           setProgress({});
-          setAiStatus('');
-          setValidationError('');
         }}
-        className="mt-8 w-full space-card text-cyan-400 py-4 rounded-xl font-bold hover:neural-glow transition-all border border-slate-600 uppercase tracking-wide"
+        className="w-full mt-8 premium-card text-cyan-400 py-4 rounded-xl font-medium border border-gray-600 hover:border-cyan-400 transition-all"
       >
-        Initialize New Cosmic Path
+        Create New Learning Plan
       </button>
     </div>
   );
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-purple-950 to-slate-950 p-6">
-      <div className="fixed inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-purple-900/20 via-transparent to-transparent pointer-events-none"></div>
+    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 p-6">
       <div className="relative z-10">
         {step === 'input' && renderInputForm()}
         {step === 'roadmap' && renderRoadmap()}
@@ -360,4 +533,4 @@ const AICourseBuilder = () => {
   );
 };
 
-export default AICourseBuilder;
+export default LIAA;
