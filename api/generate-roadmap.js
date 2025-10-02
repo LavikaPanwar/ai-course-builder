@@ -18,112 +18,148 @@ export default async function handler(req, res) {
       });
     }
 
-    const roadmap = await generateRoadmapWithAI({
+    console.log('🔄 Generating roadmap for:', goal);
+
+    const roadmap = await generateRoadmapWithOllama({
       goal,
       background, 
       timeAvailable,
       learningStyle
     });
 
+    console.log('✅ Roadmap generated successfully');
     res.status(200).json(roadmap);
 
   } catch (error) {
-    console.error('API Error:', error);
-    res.status(500).json({ 
-      error: 'Failed to generate roadmap',
-      message: error.message 
+    console.error('❌ API Error:', error);
+    // Always return successful response with fallback data
+    const roadmap = generateEnhancedMockRoadmap({
+      goal: req.body.goal,
+      background: req.body.background,
+      timeAvailable: req.body.timeAvailable,
+      learningStyle: req.body.learningStyle
     });
+    res.status(200).json(roadmap);
   }
 }
 
-async function generateRoadmapWithAI(learningData) {
+async function generateRoadmapWithOllama(learningData) {
   const { goal, background, timeAvailable, learningStyle } = learningData;
 
-  // Try OpenAI first if API key is available
-  if (process.env.OPENAI_API_KEY) {
-    try {
-      const response = await fetch('https://api.openai.com/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`
-        },
-        body: JSON.stringify({
-          model: 'gpt-3.5-turbo',
-          messages: [
-            {
-              role: 'system',
-              content: `You are an expert learning path designer. Create highly personalized learning roadmaps based on user's background, time availability, and learning style. 
-              Return valid JSON with this structure:
-              {
-                "title": "Personalized learning path title",
-                "estimatedDuration": "X-Y weeks",
-                "personalizedMessage": "Custom message for the user",
-                "modules": [
-                  {
-                    "id": 1,
-                    "title": "Module title",
-                    "description": "Detailed description",
-                    "difficulty": "Beginner/Intermediate/Advanced",
-                    "duration": "X-Y weeks",
-                    "topics": ["topic1", "topic2", "topic3"]
-                  }
-                ],
-                "resources": [
-                  {
-                    "type": "course/video/documentation",
-                    "title": "Resource title",
-                    "provider": "Provider name",
-                    "url": "https://example.com",
-                    "duration": "X hours",
-                    "free": true/false
-                  }
-                ]
-              }
-              
-              Important: Make it highly personalized based on:
-              - Goal: ${goal}
-              - Background: ${background}
-              - Time Available: ${timeAvailable}
-              - Learning Style: ${learningStyle}
-              
-              Create specific, actionable content that matches their level and preferences.`
-            },
-            {
-              role: 'user',
-              content: `Create a personalized learning roadmap for me to learn ${goal}. I'm at ${background} level, have ${timeAvailable} available, and prefer ${learningStyle} learning style.`
-            }
-          ],
-          temperature: 0.8,
-          max_tokens: 3000
-        })
-      });
+  try {
+    console.log('🤖 Calling Ollama AI...');
+    
+    const response = await fetch('http://localhost:11434/api/generate', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: 'llama3.2:3b',
+        prompt: `ACT AS AN EXPERT LEARNING PATH DESIGNER. Create a HIGHLY PERSONALIZED learning roadmap as JSON.
 
-      if (!response.ok) {
-        throw new Error(`OpenAI API failed: ${response.status}`);
-      }
-      
-      const data = await response.json();
-      const aiResponse = data.choices[0].message.content;
-      
-      // Parse the JSON response from AI
-      try {
-        return JSON.parse(aiResponse);
-      } catch (parseError) {
-        console.error('Failed to parse AI response:', parseError);
-        // Fall back to enhanced mock data
-        return generateEnhancedMockRoadmap(learningData);
-      }
-      
-    } catch (error) {
-      console.error('OpenAI error:', error);
-      // Fall back to enhanced mock data
-      return generateEnhancedMockRoadmap(learningData);
+LEARNER PROFILE:
+- GOAL: ${goal}
+- CURRENT LEVEL: ${background}
+- TIME AVAILABLE: ${timeAvailable}
+- LEARNING STYLE: ${learningStyle}
+
+CREATE A ROADMAP THAT IS:
+- Personalized to their specific level and goals
+- Matches their learning style preference
+- Realistic for their time commitment
+- Practical and actionable
+
+RETURN ONLY VALID JSON WITH THIS EXACT STRUCTURE:
+{
+  "title": "Creative, personalized title for their learning journey",
+  "estimatedDuration": "X-Y weeks",
+  "personalizedMessage": "Brief motivational message specific to their situation",
+  "modules": [
+    {
+      "id": 1,
+      "title": "Module title that matches their level",
+      "description": "Detailed description of what they'll learn, personalized to their style",
+      "difficulty": "Beginner/Intermediate/Advanced",
+      "duration": "X-Y weeks",
+      "topics": ["Specific topic 1", "Specific topic 2", "Specific topic 3", "Specific topic 4"]
+    },
+    {
+      "id": 2,
+      "title": "Next module title",
+      "description": "Continue building on previous knowledge",
+      "difficulty": "Appropriate difficulty",
+      "duration": "X-Y weeks", 
+      "topics": ["Advanced topic 1", "Advanced topic 2", "Advanced topic 3"]
+    },
+    {
+      "id": 3,
+      "title": "Advanced module title",
+      "description": "Master-level content for their goals",
+      "difficulty": "Advanced",
+      "duration": "X-Y weeks",
+      "topics": ["Expert topic 1", "Expert topic 2", "Real-world project"]
     }
-  }
+  ],
+  "resources": [
+    {
+      "type": "course/video/documentation/book",
+      "title": "Resource name matching their style",
+      "provider": "Provider name",
+      "url": "#",
+      "duration": "X hours",
+      "free": true
+    },
+    {
+      "type": "video/course/practice",
+      "title": "Another helpful resource",
+      "provider": "Provider", 
+      "url": "#",
+      "duration": "X hours",
+      "free": true
+    }
+  ]
+}
 
-  // If no OpenAI API key, use enhanced mock data
-  return generateEnhancedMockRoadmap(learningData);
+MAKE IT HIGHLY PERSONALIZED AND SPECIFIC TO THEIR PROFILE!`,
+        stream: false,
+        options: {
+          temperature: 0.8,
+          num_predict: 2000
+        }
+      })
+    });
+
+    if (!response.ok) {
+      throw new Error(`Ollama API error: ${response.status}`);
+    }
+
+    const data = await response.json();
+    console.log('📨 Received AI response');
+    
+    // Extract JSON from response
+    let cleanResponse = data.response;
+    
+    // Remove markdown code blocks
+    cleanResponse = cleanResponse.replace(/```json/g, '').replace(/```/g, '').trim();
+    
+    // Find JSON object
+    const jsonStart = cleanResponse.indexOf('{');
+    const jsonEnd = cleanResponse.lastIndexOf('}') + 1;
+    
+    if (jsonStart !== -1 && jsonEnd !== -1) {
+      const jsonString = cleanResponse.substring(jsonStart, jsonEnd);
+      const parsedData = JSON.parse(jsonString);
+      console.log('✅ Successfully parsed AI-generated roadmap');
+      return parsedData;
+    } else {
+      throw new Error('No valid JSON found in AI response');
+    }
+    
+  } catch (error) {
+    console.log('🔄 Ollama unavailable, using enhanced personalized mock data');
+    return generateEnhancedMockRoadmap(learningData);
+  }
 }
 
 function generateEnhancedMockRoadmap(data) {
@@ -137,90 +173,87 @@ function generateEnhancedMockRoadmap(data) {
     '10+h/week': '4-6 weeks'
   };
 
-  // Helper functions for personalization
-  const getFoundationDescription = () => {
+  // Personalized module descriptions based on learning style
+  const getStyleDescription = (moduleType) => {
     const styleMap = {
-      'Visual': 'Visual introduction with diagrams, charts, and interactive examples',
-      'Reading': 'Comprehensive reading materials, articles, and detailed explanations',
-      'Practical': 'Hands-on exercises with immediate practice and real-world examples',
-      'Mixed': 'Balanced approach combining various learning methods'
+      'Visual': {
+        'foundation': 'Learn through diagrams, charts, and visual examples that make complex concepts easy to understand',
+        'core': 'Master concepts with detailed workflows, process diagrams, and visual project guides', 
+        'advanced': 'Tackle complex challenges with architectural diagrams and visual debugging techniques'
+      },
+      'Reading': {
+        'foundation': 'Build strong fundamentals through comprehensive reading materials and detailed explanations',
+        'core': 'Dive deep with in-depth articles, documentation, and structured reading assignments',
+        'advanced': 'Master advanced topics through expert literature and detailed case studies'
+      },
+      'Practical': {
+        'foundation': 'Learn by doing with hands-on exercises and immediate practical application',
+        'core': 'Build real skills through project-based learning and practical challenges',
+        'advanced': 'Solve complex real-world problems with advanced practical projects'
+      },
+      'Mixed': {
+        'foundation': 'Build understanding through varied approaches including reading, visuals, and hands-on practice',
+        'core': 'Master concepts using multiple learning methods tailored to different topics',
+        'advanced': 'Tackle advanced challenges with a balanced approach of theory and practice'
+      }
     };
     
-    const levelMap = {
-      'Beginner': `Perfect for complete beginners starting ${goal} from scratch`,
-      'Some Experience': `Solidify your foundational knowledge of ${goal}`,
-      'Intermediate': `Review and strengthen core ${goal} fundamentals`, 
-      'Advanced': `Master advanced ${goal} foundational concepts and patterns`
-    };
-    
-    return `${levelMap[background]} using ${styleMap[learningStyle]?.toLowerCase() || 'mixed methods'}.`;
+    return styleMap[learningStyle]?.[moduleType] || 'Comprehensive learning approach';
   };
 
-  const getCoreDescription = () => {
-    const styleMap = {
-      'Visual': 'Visual learning with detailed workflows and process diagrams',
-      'Reading': 'In-depth reading on core concepts and methodologies',
-      'Practical': 'Practical application through projects and exercises',
-      'Mixed': 'Comprehensive approach to core concepts'
-    };
-    return `Master the essential ${goal} concepts using ${styleMap[learningStyle]?.toLowerCase() || 'proven methods'}.`;
-  };
-
-  const getAdvancedDescription = () => {
-    return `Advanced ${goal} applications and real-world projects tailored for ${background.toLowerCase()} level.`;
-  };
-
+  // Personalized topics based on background and goal
   const getFoundationTopics = () => {
-    const topics = {
-      'Beginner': [
-        `Introduction to ${goal} and basic concepts`,
-        'Getting started guide and setup',
-        'Essential terminology and principles',
-        'Simple examples and first steps',
-        'Common beginner mistakes to avoid'
-      ],
-      'Some Experience': [
-        `Core ${goal} principles and fundamentals`,
-        'Best practices and common patterns',
-        'Development environment setup',
-        'Basic project structure and organization',
-        'Debugging and troubleshooting basics'
-      ],
-      'Intermediate': [
-        'Advanced foundational concepts',
-        'Architecture and design patterns',
-        'Performance considerations',
-        'Tooling and workflow optimization',
-        'Code quality and maintenance'
-      ],
-      'Advanced': [
-        'Expert-level fundamentals and patterns',
-        'Advanced architecture and scaling',
-        'Performance optimization techniques',
-        'Industry standards and best practices',
-        'Mentoring and code review skills'
-      ]
-    };
-    
-    return topics[background] || topics['Beginner'];
+    if (background === 'Beginner') {
+      return [
+        `Introduction to ${goal} - basic concepts and principles`,
+        'Setting up your development environment and tools',
+        'Core terminology and fundamental building blocks',
+        'Your first simple project or exercise',
+        'Common beginner mistakes and how to avoid them'
+      ];
+    } else if (background === 'Some Experience') {
+      return [
+        `Advanced ${goal} fundamentals and core principles`,
+        'Best practices and professional workflows',
+        'Development environment optimization',
+        'Project structure and organization patterns',
+        'Debugging and troubleshooting techniques'
+      ];
+    } else if (background === 'Intermediate') {
+      return [
+        'Expert-level foundational concepts',
+        'Architecture and design pattern fundamentals',
+        'Performance considerations from the start',
+        'Professional tooling and setup',
+        'Code quality and maintenance standards'
+      ];
+    } else { // Advanced
+      return [
+        'Master-level foundational patterns',
+        'Enterprise-ready architecture basics',
+        'Advanced performance fundamentals',
+        'Industry-standard development setup',
+        'Mentoring and code review foundations'
+      ];
+    }
   };
 
   const getCoreTopics = () => {
     const baseTopics = [
-      'Key techniques and methodologies',
-      'Practical applications and use cases',
-      'Common patterns and best practices',
-      'Hands-on exercises and projects',
-      'Problem-solving approaches'
+      'Key techniques and methodologies specific to your level',
+      'Practical real-world applications and use cases',
+      'Industry-standard patterns and best practices',
+      'Hands-on project work and exercises',
+      'Problem-solving strategies and approaches'
     ];
     
     if (background === 'Advanced') {
       return [
-        'Advanced techniques and methodologies',
-        'Complex real-world applications',
-        'Enterprise patterns and architecture',
-        'Performance optimization strategies',
-        'System design and scaling'
+        'Advanced techniques and enterprise methodologies',
+        'Complex real-world system applications',
+        'Enterprise patterns and architectural best practices',
+        'Large-scale project implementation',
+        'Advanced problem-solving and optimization strategies'
       ];
     }
     
@@ -229,91 +262,37 @@ function generateEnhancedMockRoadmap(data) {
 
   const getAdvancedTopics = () => {
     return [
-      'Real-world project implementation',
-      'Advanced patterns and optimization',
-      'Troubleshooting complex issues',
-      'Performance optimization',
-      'Industry best practices implementation'
+      'Complex project implementation and deployment',
+      'Advanced optimization and performance tuning',
+      'Troubleshooting complex system issues',
+      'Industry best practices implementation',
+      'Real-world case studies and advanced challenges'
     ];
-  };
-
-  const getDifficulty = (moduleLevel) => {
-    const difficultyMap = {
-      'Beginner': {
-        'beginner': 'Beginner',
-        'intermediate': 'Intermediate', 
-        'advanced': 'Advanced'
-      },
-      'Some Experience': {
-        'beginner': 'Beginner',
-        'intermediate': 'Intermediate',
-        'advanced': 'Advanced'
-      },
-      'Intermediate': {
-        'beginner': 'Beginner', 
-        'intermediate': 'Intermediate',
-        'advanced': 'Advanced'
-      },
-      'Advanced': {
-        'beginner': 'Beginner',
-        'intermediate': 'Intermediate', 
-        'advanced': 'Expert'
-      }
-    };
-    
-    return difficultyMap[background]?.[moduleLevel] || moduleLevel;
-  };
-
-  const getDuration = (moduleLevel) => {
-    const baseDurations = {
-      'beginner': '2-3 weeks',
-      'intermediate': '3-4 weeks',
-      'advanced': '3-5 weeks'
-    };
-    
-    // Adjust based on time availability
-    if (timeAvailable === '10+h/week') {
-      return {
-        'beginner': '1-2 weeks',
-        'intermediate': '2-3 weeks',
-        'advanced': '2-4 weeks'
-      }[moduleLevel];
-    }
-    
-    if (timeAvailable === '1-2h/week') {
-      return {
-        'beginner': '3-4 weeks',
-        'intermediate': '4-5 weeks',
-        'advanced': '5-6 weeks'
-      }[moduleLevel];
-    }
-    
-    return baseDurations[moduleLevel];
   };
 
   const modules = [
     {
       id: 1,
-      title: `${goal} Fundamentals`,
-      description: getFoundationDescription(),
-      difficulty: getDifficulty('beginner'),
-      duration: getDuration('beginner'),
+      title: background === 'Advanced' ? `Advanced ${goal} Fundamentals` : `${goal} Foundation Mastery`,
+      description: getStyleDescription('foundation'),
+      difficulty: background === 'Advanced' ? 'Intermediate' : 'Beginner',
+      duration: timeAvailable === '10+h/week' ? '1-2 weeks' : '2-3 weeks',
       topics: getFoundationTopics()
     },
     {
       id: 2,
-      title: `Core ${goal} Concepts`,
-      description: getCoreDescription(),
-      difficulty: getDifficulty('intermediate'),
-      duration: getDuration('intermediate'),
+      title: `Core ${goal} Concepts & Applications`,
+      description: getStyleDescription('core'),
+      difficulty: 'Intermediate',
+      duration: timeAvailable === '1-2h/week' ? '4-5 weeks' : '3-4 weeks',
       topics: getCoreTopics()
     },
     {
       id: 3,
-      title: `Advanced ${goal} Applications`,
-      description: getAdvancedDescription(),
-      difficulty: getDifficulty('advanced'),
-      duration: getDuration('advanced'),
+      title: `Advanced ${goal} Projects & Mastery`,
+      description: getStyleDescription('advanced'),
+      difficulty: background === 'Beginner' ? 'Advanced' : 'Expert',
+      duration: timeAvailable === '1-2h/week' ? '5-6 weeks' : '3-5 weeks',
       topics: getAdvancedTopics()
     }
   ];
@@ -321,74 +300,95 @@ function generateEnhancedMockRoadmap(data) {
   // Adjust modules based on background
   let finalModules = modules;
   if (background === 'Advanced') {
-    finalModules = [modules[1], modules[2]]; // Skip basics for advanced
+    finalModules = [modules[1], modules[2]]; // Skip basics for advanced users
   }
 
+  // Personalized resources based on learning style
   const getResources = () => {
-    const courseLevels = {
-      'Beginner': 'Complete Beginner Course',
-      'Some Experience': 'Intermediate Mastery Course',
-      'Intermediate': 'Advanced Concepts Course',
-      'Advanced': 'Expert Masterclass'
+    const resourceMap = {
+      'Visual': [
+        {
+          type: 'video',
+          title: `${goal} Visual Learning Series`,
+          provider: 'YouTube',
+          url: '#',
+          duration: '5-8 hours',
+          free: true
+        },
+        {
+          type: 'course',
+          title: `${goal} with Diagrams and Examples`,
+          provider: 'Visual Learning Pro',
+          url: '#',
+          duration: '10+ hours',
+          free: true
+        }
+      ],
+      'Reading': [
+        {
+          type: 'documentation',
+          title: `Comprehensive ${goal} Documentation`,
+          provider: 'Official Docs',
+          url: '#',
+          duration: 'Ongoing',
+          free: true
+        },
+        {
+          type: 'book',
+          title: `${goal} Complete Guide`,
+          provider: 'Open Library',
+          url: '#',
+          duration: '15+ hours',
+          free: true
+        }
+      ],
+      'Practical': [
+        {
+          type: 'course',
+          title: `${goal} Hands-On Projects`,
+          provider: 'Project-Based Learning',
+          url: '#',
+          duration: '12+ hours',
+          free: true
+        },
+        {
+          type: 'exercises',
+          title: `${goal} Practice Challenges`,
+          provider: 'Practice Hub',
+          url: '#',
+          duration: '8+ hours',
+          free: true
+        }
+      ],
+      'Mixed': [
+        {
+          type: 'course',
+          title: `${goal} Complete Learning Path`,
+          provider: 'Learning Platform',
+          url: '#',
+          duration: '15+ hours',
+          free: true
+        },
+        {
+          type: 'video',
+          title: `${goal} Tutorial Series`,
+          provider: 'Mixed Media Learning',
+          url: '#',
+          duration: '6+ hours',
+          free: true
+        }
+      ]
     };
 
-    const providers = {
-      'Visual': 'Udemy',
-      'Reading': 'Coursera',
-      'Practical': 'Pluralsight',
-      'Mixed': 'edX'
-    };
-
-    return [
-      {
-        type: 'course',
-        title: `${goal} ${courseLevels[background]}`,
-        provider: providers[learningStyle],
-        url: `https://www.${providers[learningStyle].toLowerCase()}.com/courses/search/?q=${encodeURIComponent(goal + ' ' + background.toLowerCase())}`,
-        duration: timeAvailable === '10+h/week' ? '15+ hours' : '8-12 hours',
-        free: background === 'Beginner' // More free resources for beginners
-      },
-      {
-        type: 'video',
-        title: `${goal} ${learningStyle} Tutorial Series`,
-        provider: 'YouTube',
-        url: `https://www.youtube.com/results?search_query=${encodeURIComponent(goal + ' ' + learningStyle.toLowerCase() + ' tutorial ' + background.toLowerCase())}`,
-        duration: timeAvailable === '1-2h/week' ? '4-6 hours' : '2-3 hours',
-        free: true
-      },
-      {
-        type: 'documentation',
-        title: `${goal} ${background} Documentation`,
-        provider: 'Official Docs',
-        url: `https://${goal.toLowerCase().replace(' ', '-')}.org/docs`,
-        duration: 'Ongoing',
-        free: true
-      }
-    ];
+    return resourceMap[learningStyle] || resourceMap['Mixed'];
   };
 
-  const generatePersonalizedMessage = () => {
-    const timeMessage = {
-      '1-2h/week': 'steady, consistent learning pace',
-      '3-5h/week': 'moderate and effective learning schedule',
-      '6-10h/week': 'intensive learning journey',
-      '10+h/week': 'accelerated mastery path'
-    };
-    
-    const styleMessage = {
-      'Visual': 'visual learning methods with rich media content',
-      'Reading': 'comprehensive reading materials and detailed documentation',
-      'Practical': 'hands-on, project-based learning approach',
-      'Mixed': 'balanced learning approach with varied methodologies'
-    };
-    
-    return `Customized ${goal} learning path for ${background.toLowerCase()} level. Uses ${styleMessage[learningStyle]} at ${timeMessage[timeAvailable]}.`;
-  };
+  const personalizedMessage = `Custom learning path designed specifically for ${background.toLowerCase()} level with ${learningStyle.toLowerCase()} learning approach. Optimized for ${timeAvailable} - you'll build practical skills through a structured journey that matches your preferences and time commitment.`;
 
   return {
-    title: `Personalized ${goal} Mastery Path`,
+    title: `Personalized ${goal} Mastery Journey`,
     estimatedDuration: durationMap[timeAvailable] || '8-12 weeks',
-    personalizedMessage: generatePersonalizedMessage(),
+    personalizedMessage: personalizedMessage,
     modules: finalModules,
     resources: getResources()
   };
