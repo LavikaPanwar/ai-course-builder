@@ -32,43 +32,134 @@ const LIAA = () => {
     }
   };
 
-  const generateRoadmapWithAI = async () => {
-    const validation = validateGoal(learnerData.goal);
-    if (validation) {
-      setValidationError(validation);
-      return;
+  async function generateRoadmapWithOllama(learningData) {
+  const { goal, background, timeAvailable, learningStyle } = learningData;
+
+  // Validate learning goal first
+  const validationError = validateLearningGoal(goal);
+  if (validationError) {
+    throw new Error(validationError);
+  }
+
+  try {
+    console.log('🤖 Calling Ollama AI for:', goal);
+    
+    const response = await fetch('http://localhost:11434/api/generate', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: 'llama3.2:3b',
+        prompt: `ACT AS AN EXPERT LEARNING PATH DESIGNER. Create a HIGHLY PERSONALIZED learning roadmap as JSON.
+
+LEARNER PROFILE:
+- GOAL: ${goal}
+- CURRENT LEVEL: ${background}
+- TIME AVAILABLE: ${timeAvailable}
+- LEARNING STYLE: ${learningStyle}
+
+IMPORTANT: If the goal seems like a food item, recipe, or non-learning topic, return a helpful error message in the JSON.
+
+RETURN ONLY VALID JSON WITH THIS EXACT STRUCTURE:
+{
+  "title": "Learning path title",
+  "estimatedDuration": "X-Y weeks",
+  "personalizedMessage": "Motivational message",
+  "modules": [
+    {
+      "id": 1,
+      "title": "Module title",
+      "description": "Module description",
+      "difficulty": "Beginner/Intermediate/Advanced",
+      "duration": "X-Y weeks",
+      "topics": ["topic1", "topic2", "topic3"]
+    }
+  ],
+  "resources": [
+    {
+      "type": "course/video/documentation",
+      "title": "Resource name",
+      "provider": "Provider",
+      "url": "#",
+      "duration": "X hours",
+      "free": true
+    }
+  ]
+}
+
+If this is not a valid learning goal, return:
+{
+  "error": "Please enter a learning goal like programming, design, business, etc."
+}`,
+        stream: false,
+        options: {
+          temperature: 0.7,
+          num_predict: 1500
+        }
+      })
+    });
+
+    if (!response.ok) {
+      throw new Error(`Ollama API error: ${response.status}`);
     }
 
-    setLoading(true);
-    setAiStatus('Analyzing your learning profile...');
-
-    try {
-      // Real API call to your backend
-      const response = await fetch('/api/generate-roadmap', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(learnerData)
-      });
-
-      if (!response.ok) throw new Error('Failed to generate roadmap');
-
-      const roadmapData = await response.json();
+    const data = await response.json();
+    
+    // Extract JSON from response
+    let cleanResponse = data.response.replace(/```json/g, '').replace(/```/g, '').trim();
+    const jsonMatch = cleanResponse.match(/\{[\s\S]*\}/);
+    
+    if (jsonMatch) {
+      const parsedData = JSON.parse(jsonMatch[0]);
       
-      setRoadmap(roadmapData);
-      setStep('roadmap');
+      // Check if AI returned an error
+      if (parsedData.error) {
+        throw new Error(parsedData.error);
+      }
       
-    } catch (error) {
-      console.error('API Error:', error);
-      // Fallback to enhanced mock data
-      const enhancedMockRoadmap = generateEnhancedMockRoadmap(learnerData);
-      setRoadmap(enhancedMockRoadmap);
-      setStep('roadmap');
-    } finally {
-      setLoading(false);
+      return parsedData;
+    } else {
+      throw new Error('Invalid response from AI');
     }
-  };
+    
+  } catch (error) {
+    console.log('Using enhanced mock data');
+    return generateEnhancedMockRoadmap(learningData);
+  }
+}
+
+// Add this validation function
+function validateLearningGoal(goal) {
+  if (!goal || goal.trim().length < 3) {
+    return 'Please enter a learning goal (e.g., "Web Development", "Data Science")';
+  }
+
+  const foodKeywords = [
+    'gajar', 'halwa', 'biriyani', 'biryani', 'pizza', 'burger', 'pasta',
+    'curry', 'sabji', 'roti', 'naan', 'rice', 'khana', 'food', 'cook',
+    'recipe', 'cooking', 'dish', 'meal', 'eating', 'restaurant'
+  ];
+
+  const lowerGoal = goal.toLowerCase();
+  
+  if (foodKeywords.some(food => lowerGoal.includes(food))) {
+    return '🍕 This appears to be a food item! Please enter a learning goal like "Programming", "Design", "Marketing", etc.';
+  }
+
+  // Check for other non-learning topics
+  const invalidPatterns = [
+    /^[0-9]+$/, // Only numbers
+    /^[a-zA-Z]{1,2}$/, // Single letters
+    /^(hello|hi|test|hey|what)$/i // Simple words
+  ];
+
+  if (invalidPatterns.some(pattern => pattern.test(goal.trim()))) {
+    return 'Please enter a meaningful learning goal (e.g., "JavaScript", "Digital Marketing", "Graphic Design")';
+  }
+
+  return null; // Valid goal
+}
 
   // Enhanced mock data generator (fallback)
   const generateEnhancedMockRoadmap = (data) => {
