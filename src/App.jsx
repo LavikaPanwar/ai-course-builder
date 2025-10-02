@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { BookOpen, Target, Clock, TrendingUp, CheckCircle, Circle, Award, ArrowRight, Brain, Zap, Rocket, Star, Cpu, Satellite, Youtube, Globe, ExternalLink } from 'lucide-react';
+import { BookOpen, Target, Clock, TrendingUp, CheckCircle, Circle, Award, ArrowRight, Brain, Zap, Rocket, Star, Youtube, Globe, ExternalLink } from 'lucide-react';
 
 const LIAA = () => {
   const [step, setStep] = useState('input');
@@ -42,19 +42,36 @@ const LIAA = () => {
     setLoading(true);
     setAiStatus('Analyzing your learning profile...');
 
-    setTimeout(() => {
-      setAiStatus('Generating personalized roadmap...');
-    }, 1000);
+    try {
+      // Real API call to your backend
+      const response = await fetch('/api/generate-roadmap', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(learnerData)
+      });
 
-    setTimeout(() => {
-      const roadmapData = generateIntelligentMockRoadmap(learnerData);
+      if (!response.ok) throw new Error('Failed to generate roadmap');
+
+      const roadmapData = await response.json();
+      
       setRoadmap(roadmapData);
       setStep('roadmap');
+      
+    } catch (error) {
+      console.error('API Error:', error);
+      // Fallback to enhanced mock data
+      const enhancedMockRoadmap = generateEnhancedMockRoadmap(learnerData);
+      setRoadmap(enhancedMockRoadmap);
+      setStep('roadmap');
+    } finally {
       setLoading(false);
-    }, 2500);
+    }
   };
 
-  const generateIntelligentMockRoadmap = (data) => {
+  // Enhanced mock data generator (fallback)
+  const generateEnhancedMockRoadmap = (data) => {
     const { goal, background, timeAvailable, learningStyle } = data;
     
     const durationMap = {
@@ -64,53 +81,108 @@ const LIAA = () => {
       '10+h/week': '4-6 weeks'
     };
 
+    const getFoundationDescription = () => {
+      const styleMap = {
+        'Visual': 'Visual introduction with diagrams and examples',
+        'Reading': 'Comprehensive reading materials and theory',
+        'Practical': 'Hands-on exercises and immediate practice',
+        'Mixed': 'Balanced approach with various learning methods'
+      };
+      
+      const levelMap = {
+        'Beginner': 'Perfect for complete beginners starting from scratch',
+        'Some Experience': 'Solidify your foundational knowledge',
+        'Intermediate': 'Review and strengthen core fundamentals', 
+        'Advanced': 'Advanced foundational concepts and patterns'
+      };
+      
+      return `${levelMap[background]} using ${styleMap[learningStyle]?.toLowerCase() || 'mixed methods'}.`;
+    };
+
+    const getFoundationTopics = () => {
+      const topics = {
+        'Beginner': [
+          `What is ${goal}? Basic concepts`,
+          'Getting started guide',
+          'Essential terminology',
+          'Simple examples and exercises'
+        ],
+        'Some Experience': [
+          `Core ${goal} principles`,
+          'Common patterns and best practices',
+          'Setting up development environment',
+          'Basic project structure'
+        ],
+        'Intermediate': [
+          'Advanced foundational concepts',
+          'Architecture and design patterns',
+          'Performance considerations',
+          'Tooling and workflow optimization'
+        ],
+        'Advanced': [
+          'Expert-level fundamentals',
+          'Advanced patterns and architectures',
+          'Performance optimization techniques',
+          'Industry best practices and standards'
+        ]
+      };
+      
+      return topics[background] || topics['Beginner'];
+    };
+
     const modules = [
       {
         id: 1,
-        title: 'Foundation & Fundamentals',
-        description: 'Build core understanding and essential principles. Establish strong foundational knowledge.',
-        difficulty: 'Beginner',
+        title: `${goal} Fundamentals`,
+        description: getFoundationDescription(),
+        difficulty: background === 'Advanced' ? 'Beginner' : 'Beginner',
         duration: '2-3 weeks',
-        topics: ['Basic concepts and terminology', 'Fundamental principles', 'Setting up environment', 'Core building blocks']
+        topics: getFoundationTopics()
       },
       {
         id: 2,
-        title: 'Core Concepts & Techniques',
+        title: `Core ${goal} Concepts`,
         description: 'Dive deeper into essential methods, patterns, and practical applications.',
-        difficulty: 'Intermediate',
+        difficulty: background === 'Beginner' ? 'Intermediate' : 'Intermediate',
         duration: '3-4 weeks',
         topics: ['Key techniques and methodologies', 'Practical applications', 'Common patterns and best practices', 'Hands-on exercises']
       },
       {
         id: 3,
-        title: 'Advanced Applications & Projects',
+        title: `Advanced ${goal} Applications`,
         description: 'Apply knowledge to complex scenarios, real projects, and advanced concepts.',
-        difficulty: 'Advanced',
+        difficulty: background === 'Beginner' ? 'Advanced' : 'Expert',
         duration: '3-5 weeks',
         topics: ['Real-world project implementation', 'Advanced patterns and optimization', 'Troubleshooting and debugging', 'Performance optimization']
       }
     ];
 
+    // Adjust modules based on background
+    let finalModules = modules;
+    if (background === 'Advanced') {
+      finalModules = [modules[1], modules[2]]; // Skip basics for advanced
+    }
+
     const resources = [
       {
         type: 'course',
-        title: `Complete ${goal} Masterclass`,
+        title: `${goal} ${background} Masterclass`,
         provider: 'Udemy',
-        url: `https://www.udemy.com/courses/search/?q=${encodeURIComponent(goal)}`,
+        url: `https://www.udemy.com/courses/search/?q=${encodeURIComponent(goal + ' ' + background)}`,
         duration: '10+ hours',
-        free: false
+        free: background === 'Beginner'
       },
       {
         type: 'video',
-        title: `${goal} Crash Course`,
+        title: `${goal} ${learningStyle} Tutorial`,
         provider: 'YouTube',
-        url: `https://www.youtube.com/results?search_query=${encodeURIComponent(goal + ' tutorial')}`,
+        url: `https://www.youtube.com/results?search_query=${encodeURIComponent(goal + ' ' + learningStyle + ' tutorial')}`,
         duration: '2-3 hours',
         free: true
       },
       {
         type: 'documentation',
-        title: 'Official Documentation & Guides',
+        title: `${goal} Official Documentation`,
         provider: 'MDN Web Docs',
         url: 'https://developer.mozilla.org',
         duration: 'Ongoing',
@@ -119,10 +191,10 @@ const LIAA = () => {
     ];
 
     return {
-      title: `Master ${goal}`,
+      title: `Personalized ${goal} Learning Path`,
       estimatedDuration: durationMap[timeAvailable] || '8-12 weeks',
       personalizedMessage: `Customized for ${background.toLowerCase()} level with ${learningStyle.toLowerCase()} learning preference. Optimized for ${timeAvailable}.`,
-      modules,
+      modules: finalModules,
       resources
     };
   };
@@ -164,7 +236,7 @@ const LIAA = () => {
             </p>
           </div>
           <p className="text-xl text-gray-300 font-light leading-relaxed max-w-xl mx-auto">
-            Experience the future of learning with <span className="text-transparent bg-gradient-to-r from-cyan-400 to-purple-400 bg-clip-text font-semibold">AI-powered personalized roadmaps</span>
+            Get <span className="text-transparent bg-gradient-to-r from-cyan-400 to-purple-400 bg-clip-text font-semibold">truly personalized learning roadmaps</span> powered by AI
           </p>
         </div>
       </div>
@@ -282,8 +354,8 @@ const LIAA = () => {
                   <div className="absolute inset-0 w-10 h-10 border-4 border-cyan-400 border-t-transparent rounded-full animate-spin"></div>
                 </div>
                 <div>
-                  <p className="text-cyan-300 font-medium">{aiStatus}</p>
-                  <p className="text-cyan-400/60 text-sm">Please wait while AI crafts your journey...</p>
+                  <p className="text-cyan-300 font-medium">AI is creating your personalized roadmap...</p>
+                  <p className="text-cyan-400/60 text-sm">Analyzing your background, goals, and learning style</p>
                 </div>
               </div>
             </div>
@@ -393,6 +465,7 @@ const LIAA = () => {
                   <span className={`px-3 py-1 rounded-lg text-xs font-bold uppercase tracking-wider ${
                     module.difficulty === 'Beginner' ? 'bg-green-500/20 text-green-400 border border-green-500/30' :
                     module.difficulty === 'Intermediate' ? 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/30' :
+                    module.difficulty === 'Advanced' ? 'bg-orange-500/20 text-orange-400 border border-orange-500/30' :
                     'bg-red-500/20 text-red-400 border border-red-500/30'
                   }`}>
                     {module.difficulty}
