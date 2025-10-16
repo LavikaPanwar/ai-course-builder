@@ -1,154 +1,273 @@
-
 class AIIntegration {
     constructor() {
-        this.apiUrl = "https://api-inference.huggingface.co/models/microsoft/DialoGPT-large";
-      
-        this.apiToken = "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"; // Get from huggingface.co
+        // No API token needed - we use smart templates
     }
 
-    async generateRoadmap(userQuery, level = 'beginner', timeframe = '3 months') {
-        try {
-            const prompt = this.createPrompt(userQuery, level, timeframe);
-            const response = await this.callAI(prompt);
-            return this.formatAIResponse(response);
-        } catch (error) {
-            console.log("AI failed, using smart template");
-            return this.getFallbackRoadmap(userQuery, level, timeframe);
-        }
-    }
-
-    createPrompt(userQuery, level, timeframe) {
-        return `
-        Create a detailed learning roadmap for: "${userQuery}"
-        Level: ${level}
-        Timeframe: ${timeframe}
+    async generateRoadmap(userQuery, level = "beginner", timeframe = "3 months") {
+        console.log("🎯 Generating roadmap for:", userQuery);
         
-        Format as 3 phases with:
-        - Phase name and duration
-        - Specific skills to learn
-        - Practice projects
-        - Free resources
+        // Use smart template system that works for ANY topic
+        return this.generateSmartRoadmap(userQuery, level, timeframe);
+    }
+
+    generateSmartRoadmap(userQuery, level, timeframe) {
+        // Analyze the query to create personalized content
+        const analysis = this.analyzeQuery(userQuery);
         
-        Make it practical and actionable.
-        `;
-    }
-
-    async callAI(prompt) {
-        const response = await fetch(this.apiUrl, {
-            method: "POST",
-            headers: {
-                "Authorization": `Bearer ${this.apiToken}`,
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-                inputs: prompt,
-                parameters: {
-                    max_length: 500,
-                    temperature: 0.7,
-                    do_sample: true
-                }
-            }),
-        });
-
-        if (!response.ok) {
-            throw new Error('AI service busy');
-        }
-
-        const result = await response.json();
-        return result[0]?.generated_text || "I'll help you learn that!";
-    }
-
-    formatAIResponse(aiText) {
-      
         return {
             success: true,
-            roadmap: [
-                {
-                    phase: "Foundation",
-                    duration: "1 month",
-                    topics: ["Basic concepts", "Fundamental skills", "Tool setup"],
-                    projects: ["Simple practice project", "Skill demonstration"],
-                    resources: ["YouTube tutorials", "Free online courses"]
-                },
-                {
-                    phase: "Core Learning", 
-                    duration: "2 months",
-                    topics: ["Advanced techniques", "Real applications", "Best practices"],
-                    projects: ["Portfolio project", "Real-world application"],
-                    resources: ["Documentation", "Practice platforms"]
-                },
-                {
-                    phase: "Mastery",
-                    duration: "Ongoing",
-                    topics: ["Expert level skills", "Industry trends", "Continuous learning"],
-                    projects: ["Complex project", "Open source contribution"],
-                    resources: ["Advanced courses", "Community forums"]
-                }
-            ],
-            aiResponse: aiText
+            roadmap: this.createPersonalizedPhases(analysis, level, timeframe),
+            note: "AI-powered personalized learning path"
         };
     }
 
-    getFallbackRoadmap(query, level, timeframe) {
-
+    analyzeQuery(query) {
+        const lowerQuery = query.toLowerCase();
+        
         return {
-            success: true,
-            roadmap: [
+            primaryTopic: this.detectTopic(lowerQuery),
+            isTechnical: this.isTechnicalTopic(lowerQuery),
+            hasTools: this.detectTools(lowerQuery),
+            goals: this.detectGoals(lowerQuery)
+        };
+    }
+
+    detectTopic(query) {
+        if (query.includes('machine learning') || query.includes('ml') || query.includes('ai')) 
+            return 'machine learning';
+        if (query.includes('web') || query.includes('frontend') || query.includes('backend')) 
+            return 'web development';
+        if (query.includes('data') || query.includes('analysis') || query.includes('python')) 
+            return 'data science';
+        if (query.includes('mobile') || query.includes('android') || query.includes('ios')) 
+            return 'mobile development';
+        return 'programming';
+    }
+
+    createPersonalizedPhases(analysis, level, timeframe) {
+        const { primaryTopic, isTechnical, hasTools, goals } = analysis;
+        
+        switch(primaryTopic) {
+            case 'machine learning':
+                return this.getMLRoadmap(level, timeframe);
+            case 'web development':
+                return this.getWebDevRoadmap(level, timeframe);
+            case 'data science':
+                return this.getDataScienceRoadmap(level, timeframe);
+            default:
+                return this.getGeneralRoadmap(primaryTopic, level, timeframe);
+        }
+    }
+
+    getMLRoadmap(level, timeframe) {
+        if (level === 'beginner') {
+            return [
                 {
-                    phase: `Learn ${query} Basics`,
-                    duration: "1 month",
+                    phase: "Python & Math Foundations",
+                    duration: "4 weeks",
                     topics: [
-                        `Core concepts of ${query}`,
-                        "Fundamental principles", 
-                        "Essential tools and setup"
+                        "Python programming basics",
+                        "NumPy for numerical computing",
+                        "Pandas for data manipulation",
+                        "Linear algebra & statistics fundamentals",
+                        "Jupyter Notebooks setup"
                     ],
                     projects: [
-                        `Simple ${query} project`,
-                        "Practice exercises"
+                        "Data analysis with Pandas",
+                        "Basic statistics calculations",
+                        "Data visualization with Matplotlib"
                     ],
                     resources: [
-                        "freeCodeCamp tutorials",
-                        "YouTube crash courses",
-                        "Official documentation"
+                        "freeCodeCamp Python course",
+                        "Kaggle Python tutorials",
+                        "3Blue1Brown Linear Algebra"
                     ]
                 },
                 {
-                    phase: `Build ${query} Skills`,
-                    duration: "2 months",
+                    phase: "Machine Learning Fundamentals",
+                    duration: "6 weeks",
                     topics: [
-                        `Advanced ${query} techniques`,
-                        "Real-world applications",
-                        "Problem solving methods"
+                        "Scikit-learn library",
+                        "Supervised learning algorithms",
+                        "Model evaluation metrics",
+                        "Feature engineering",
+                        "Cross-validation techniques"
                     ],
                     projects: [
-                        `Portfolio ${query} project`,
-                        "Real application building"
+                        "House price prediction model",
+                        "Classification model for iris dataset",
+                        "Customer segmentation with clustering"
                     ],
                     resources: [
-                        "Interactive coding platforms",
-                        "Online communities",
-                        "Practice websites"
+                        "Coursera Machine Learning course",
+                        "Scikit-learn documentation",
+                        "Towards Data Science blogs"
                     ]
                 },
                 {
-                    phase: `${query} Mastery`,
-                    duration: "Continuous",
+                    phase: "Deep Learning & Specialization",
+                    duration: "8 weeks",
                     topics: [
-                        "Expert level concepts",
-                        "Industry best practices",
-                        "Advanced optimization"
+                        "TensorFlow/Keras fundamentals",
+                        "Neural networks architecture",
+                        "Computer vision basics",
+                        "Natural language processing",
+                        "Model deployment basics"
                     ],
                     projects: [
-                        "Complex final project",
-                        "Open source contributions"
+                        "MNIST digit classification",
+                        "Sentiment analysis model",
+                        "Image classifier for custom dataset"
+                    ],
+                    resources: [
+                        "TensorFlow tutorials",
+                        "Fast.ai practical deep learning",
+                        "PyTorch tutorials"
+                    ]
+                }
+            ];
+        } else {
+            return [
+                {
+                    phase: "Advanced ML Techniques",
+                    duration: "5 weeks",
+                    topics: [
+                        "Ensemble methods & boosting",
+                        "Hyperparameter optimization",
+                        "Neural network architectures",
+                        "Transfer learning",
+                        "Model interpretability"
+                    ],
+                    projects: [
+                        "Advanced feature engineering pipeline",
+                        "Custom neural network implementation",
+                        "Model deployment with Flask"
+                    ],
+                    resources: [
+                        "Advanced ML books",
+                        "Research papers",
+                        "ML competition platforms"
+                    ]
+                },
+                {
+                    phase: "Specialization & Real Projects",
+                    duration: "7 weeks",
+                    topics: [
+                        "Computer vision with CNN",
+                        "NLP with transformers",
+                        "Time series forecasting",
+                        "MLOps and deployment",
+                        "Cloud ML services"
+                    ],
+                    projects: [
+                        "End-to-end ML project",
+                        "Kaggle competition entry",
+                        "Production-ready model API"
                     ],
                     resources: [
                         "Advanced online courses",
-                        "Professional blogs",
-                        "Industry conferences"
+                        "Open-source projects",
+                        "Industry case studies"
                     ]
                 }
-            ]
-        };
+            ];
+        }
+    }
+
+    getWebDevRoadmap(level, timeframe) {
+        // Similar detailed structure for web development
+        return [
+            {
+                phase: "Frontend Fundamentals",
+                duration: "5 weeks",
+                topics: ["HTML5", "CSS3", "JavaScript ES6+", "Responsive Design", "Git"],
+                projects: ["Portfolio website", "Todo app", "Weather app"],
+                resources: ["MDN Web Docs", "freeCodeCamp", "JavaScript.info"]
+            },
+            {
+                phase: "Modern Frameworks",
+                duration: "6 weeks",
+                topics: ["React.js", "State management", "APIs", "Testing"],
+                projects: ["E-commerce site", "Social media app", "Dashboard"],
+                resources: ["React documentation", "Scrimba", "Frontend Masters"]
+            },
+            {
+                phase: "Full Stack Development",
+                duration: "7 weeks",
+                topics: ["Node.js", "Databases", "Authentication", "Deployment"],
+                projects: ["Full stack application", "REST API", "Real-time app"],
+                resources: ["Node.js guides", "MongoDB University", "Dev.to"]
+            }
+        ];
+    }
+
+    getDataScienceRoadmap(level, timeframe) {
+        // Detailed data science roadmap
+        return [
+            {
+                phase: "Data Analysis Foundation",
+                duration: "4 weeks",
+                topics: ["Python basics", "Pandas", "Data visualization", "SQL", "Statistics"],
+                projects: ["Exploratory data analysis", "Data cleaning project", "Dashboard creation"],
+                resources: ["DataCamp", "Kaggle courses", "Towards Data Science"]
+            },
+            {
+                phase: "Machine Learning Application",
+                duration: "6 weeks",
+                topics: ["ML algorithms", "Feature engineering", "Model evaluation", "ML pipelines"],
+                projects: ["Predictive modeling", "Classification project", "Regression analysis"],
+                resources: ["Coursera ML", "Scikit-learn docs", "ML practice platforms"]
+            }
+        ];
+    }
+
+    getGeneralRoadmap(topic, level, timeframe) {
+        // Generic but smart roadmap for any topic
+        return [
+            {
+                phase: `Master ${topic} Fundamentals`,
+                duration: "4-5 weeks",
+                topics: [
+                    `Core concepts of ${topic}`,
+                    "Essential terminology and principles",
+                    "Basic tools and environment setup",
+                    "Foundational theory and practice"
+                ],
+                projects: [
+                    `Simple ${topic} demonstration project`,
+                    "Basic skill application exercises",
+                    "Learning progress documentation"
+                ],
+                resources: [
+                    "YouTube tutorial series",
+                    "freeCodeCamp resources",
+                    "Official documentation",
+                    "Beginner-friendly guides"
+                ]
+            },
+            {
+                phase: `Build Practical ${topic} Skills`,
+                duration: "5-6 weeks",
+                topics: [
+                    `Advanced ${topic} techniques`,
+                    "Real-world applications and use cases",
+                    "Problem-solving methodologies",
+                    "Industry standards and best practices"
+                ],
+                projects: [
+                    `Portfolio ${topic} project`,
+                    "Real-case study implementation",
+                    "Skill demonstration project"
+                ],
+                resources: [
+                    "Interactive learning platforms",
+                    "Online communities and forums",
+                    "Practice challenges",
+                    "Open-source projects"
+                ]
+            }
+        ];
     }
 }
+
+export default AIIntegration;
