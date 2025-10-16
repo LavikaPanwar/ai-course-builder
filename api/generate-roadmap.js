@@ -3,7 +3,7 @@ class AIIntegration {
     constructor() {
         this.apiUrl = "https://api-inference.huggingface.co/models/microsoft/DialoGPT-large";
       
-        this.apiToken = "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"; // Get from huggingface.co
+        this.apiToken = "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"; // Get from huggingface.co
     }
 
     async generateRoadmap(userQuery, level = 'beginner', timeframe = '3 months') {
