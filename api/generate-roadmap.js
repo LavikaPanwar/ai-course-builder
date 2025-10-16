@@ -270,4 +270,221 @@ class AIIntegration {
     }
 }
 
+createUniversalRoadmap(userQuery, level, timeframe) {
+    // Smart analysis of any query
+    const analysis = this.analyzeUniversalQuery(userQuery);
+    
+    return [
+        {
+            phase: `Master ${analysis.topic} Fundamentals`,
+            duration: this.getDuration(level, 1),
+            topics: [
+                `Core principles of ${analysis.topic}`,
+                `${analysis.topic} terminology and concepts`,
+                `Essential ${analysis.field} tools and setup`,
+                "Fundamental theory and practice",
+                `${analysis.field} best practices and standards`
+            ],
+            projects: [
+                `Basic ${analysis.topic} demonstration project`,
+                `${analysis.topic} concept exploration`,
+                "Learning journal and progress tracking"
+            ],
+            resources: [
+                `${analysis.field} tutorial series on YouTube`,
+                "freeCodeCamp learning resources",
+                "Official documentation and guides",
+                "Beginner-friendly online courses"
+            ]
+        },
+        {
+            phase: `Build Practical ${analysis.topic} Skills`,
+            duration: this.getDuration(level, 2),
+            topics: [
+                `Advanced ${analysis.topic} techniques`,
+                `Real-world ${analysis.field} applications`,
+                "Problem-solving methodologies",
+                "Industry tools and software",
+                "Quality assurance and testing"
+            ],
+            projects: [
+                `Portfolio ${analysis.topic} project`,
+                "Real-case study implementation",
+                "Skill demonstration project",
+                "Community or open-source contribution"
+            ],
+            resources: [
+                "Interactive learning platforms",
+                "Online communities and forums",
+                "Practice projects and challenges",
+                "Industry blogs and publications"
+            ]
+        },
+        {
+            phase: `${analysis.topic} Mastery & Specialization`,
+            duration: this.getDuration(level, 3),
+            topics: [
+                "Expert-level concepts and advanced topics",
+                "Industry trends and emerging technologies",
+                "Advanced optimization techniques",
+                "Leadership and project management",
+                "Career development and networking"
+            ],
+            projects: [
+                "Complex capstone project",
+                "Research paper or case study",
+                "Mentorship or teaching opportunity",
+                "Industry certification preparation"
+            ],
+            resources: [
+                "Advanced certification courses",
+                "Industry conferences and webinars",
+                "Professional networks",
+                "Research papers and journals"
+            ]
+        }
+    ];
+}
+
+analyzeUniversalQuery(query) {
+    const lowerQuery = query.toLowerCase();
+    
+    // Detect the field/category
+    let field = 'technology';
+    if (lowerQuery.includes('marketing') || lowerQuery.includes('business') || lowerQuery.includes('sales')) {
+        field = 'business';
+    } else if (lowerQuery.includes('design') || lowerQuery.includes('art') || lowerQuery.includes('creative')) {
+        field = 'creative';
+    } else if (lowerQuery.includes('language') || lowerQuery.includes('english') || lowerQuery.includes('spanish')) {
+        field = 'language';
+    } else if (lowerQuery.includes('music') || lowerQuery.includes('instrument') || lowerQuery.includes('guitar')) {
+        field = 'arts';
+    } else if (lowerQuery.includes('cooking') || lowerQuery.includes('culinary') || lowerQuery.includes('food')) {
+        field = 'culinary';
+    } else if (lowerQuery.includes('fitness') || lowerQuery.includes('workout') || lowerQuery.includes('gym')) {
+        field = 'fitness';
+    }
+    
+    // Extract the main topic from query
+    const topic = this.extractMainTopic(query);
+    
+    return {
+        topic: topic,
+        field: field,
+        isTechnical: field === 'technology',
+        hasPracticalComponent: !['language', 'theory'].includes(field)
+    };
+}
+
+extractMainTopic(query) {
+    // Remove common phrases to get the core topic
+    const commonPhrases = [
+        'i want to learn', 'how to learn', 'learn', 'study', 'master',
+        'become good at', 'get better at', 'roadmap for', 'guide to'
+    ];
+    
+    let topic = query.toLowerCase();
+    commonPhrases.forEach(phrase => {
+        topic = topic.replace(phrase, '');
+    });
+    
+    // Capitalize first letter of each word
+    return topic.trim()
+        .split(' ')
+        .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+        .join(' ');
+}
+
+getDuration(level, phase) {
+    const durations = {
+        beginner: ['3-4 weeks', '4-5 weeks', '5-6 weeks'],
+        intermediate: ['2-3 weeks', '3-4 weeks', '4-5 weeks'],
+        advanced: ['1-2 weeks', '2-3 weeks', '3-4 weeks']
+    };
+    
+    return durations[level][phase - 1] || '4 weeks';
+}
+createPersonalizedRoadmap(topic, level, timeframe, userQuery) {
+    // First try predefined roadmaps
+    const predefined = this.getPredefinedRoadmap(topic, level, timeframe);
+    if (predefined) {
+        return predefined;
+    }
+    
+    // If no predefined roadmap, use universal generator
+    console.log(`🎯 Generating universal roadmap for: ${topic}`);
+    return this.createUniversalRoadmap(userQuery, level, timeframe);
+}
+
+getPredefinedRoadmap(topic, level, timeframe) {
+    const roadmaps = {
+        'machine learning': () => this.getMLRoadmap(level, timeframe),
+        'web development': () => this.getWebDevRoadmap(level, timeframe),
+        'data science': () => this.getDataScienceRoadmap(level, timeframe),
+        'mobile development': () => this.getMobileDevRoadmap(level, timeframe),
+        'digital marketing': () => this.getDigitalMarketingRoadmap(level, timeframe),
+        'graphic design': () => this.getGraphicDesignRoadmap(level, timeframe),
+        'cyber security': () => this.getCyberSecurityRoadmap(level, timeframe),
+        'cloud computing': () => this.getCloudComputingRoadmap(level, timeframe)
+    };
+    
+    return roadmaps[topic] ? roadmaps[topic]() : null;
+}
+getDigitalMarketingRoadmap(level, timeframe) {
+    return [
+        {
+            phase: "Marketing Fundamentals",
+            duration: "4 weeks",
+            topics: ["Marketing principles", "Consumer behavior", "Brand building", "Content strategy", "Analytics basics"],
+            projects: ["Brand analysis", "Content calendar", "Social media audit"],
+            resources: ["HubSpot Academy", "Google Digital Garage", "Marketing blogs"]
+        },
+        {
+            phase: "Channel Specialization", 
+            duration: "6 weeks",
+            topics: ["SEO optimization", "Social media marketing", "Email marketing", "PPC advertising", "Conversion optimization"],
+            projects: ["SEO campaign", "Social media strategy", "Email sequence"],
+            resources: ["SEMrush Academy", "Facebook Blueprint", "Mailchimp guides"]
+        }
+    ];
+}
+
+getGraphicDesignRoadmap(level, timeframe) {
+    return [
+        {
+            phase: "Design Fundamentals",
+            duration: "5 weeks", 
+            topics: ["Color theory", "Typography", "Layout principles", "Design software", "Creative process"],
+            projects: ["Logo design", "Poster creation", "Brand style guide"],
+            resources: ["Adobe tutorials", "Behance inspiration", "Design books"]
+        },
+        {
+            phase: "Advanced Design Skills",
+            duration: "6 weeks",
+            topics: ["UI/UX design", "Motion graphics", "Brand identity", "Print design", "Portfolio development"],
+            projects: ["App interface", "Animated logo", "Complete brand package"],
+            resources: ["Figma tutorials", "Dribbble community", "Design conferences"]
+        }
+    ];
+}
+
+getCyberSecurityRoadmap(level, timeframe) {
+    return [
+        {
+            phase: "Security Fundamentals",
+            duration: "4 weeks",
+            topics: ["Networking basics", "Security principles", "Threat landscape", "Cryptography", "Security tools"],
+            projects: ["Network analysis", "Vulnerability assessment", "Security policy draft"],
+            resources: ["Cybrary courses", "Security blogs", "TryHackMe"]
+        },
+        {
+            phase: "Advanced Security",
+            duration: "8 weeks",
+            topics: ["Penetration testing", "Incident response", "Forensics", "Cloud security", "Compliance"],
+            projects: ["Penetration test report", "Incident simulation", "Security architecture"],
+            resources: ["Offensive Security", "SANS courses", "Security conferences"]
+        }
+    ];
+}
+
 export default AIIntegration;
