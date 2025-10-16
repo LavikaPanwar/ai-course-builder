@@ -1,13 +1,382 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>AI Course Builder</title>
-  </head>
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.jsx"></script>
-  </body>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LearnPath AI - Smart Learning Roadmaps</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        header {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            padding: 2rem 0;
+            text-align: center;
+            color: white;
+        }
+
+        header h1 {
+            font-size: 3rem;
+            margin-bottom: 0.5rem;
+        }
+
+        main {
+            padding: 2rem 0;
+        }
+
+        .input-card {
+            background: white;
+            padding: 2rem;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            margin-bottom: 2rem;
+        }
+
+        .input-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 1.5rem;
+        }
+
+        #user-query {
+            flex: 1;
+            padding: 15px;
+            border: 2px solid #e1e5e9;
+            border-radius: 8px;
+            font-size: 16px;
+        }
+
+        #user-query:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        button {
+            padding: 15px 25px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #5a6fd8;
+        }
+
+        .context-options {
+            display: flex;
+            gap: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .context-options label {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            font-weight: 500;
+        }
+
+        select {
+            padding: 10px;
+            border: 2px solid #e1e5e9;
+            border-radius: 6px;
+        }
+
+        .roadmap-container {
+            background: white;
+            padding: 2rem;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .analysis-header {
+            text-align: center;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid #e1e5e9;
+        }
+
+        .phase {
+            background: #f8f9fa;
+            margin: 1.5rem 0;
+            padding: 1.5rem;
+            border-radius: 10px;
+            border-left: 4px solid #667eea;
+        }
+
+        .phase-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .phase-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: #2d3748;
+        }
+
+        .phase-duration {
+            background: #667eea;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+        }
+
+        .topic-list, .project-list, .resource-list {
+            list-style: none;
+            margin: 1rem 0;
+        }
+
+        .topic-list li, .project-list li, .resource-list li {
+            padding: 8px 0;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .topic-list li:before {
+            content: "📚 ";
+        }
+
+        .project-list li:before {
+            content: "⚡ ";
+        }
+
+        .resource-list li:before {
+            content: "🔗 ";
+        }
+
+        .loader {
+            text-align: center;
+            padding: 3rem;
+            color: white;
+        }
+
+        .loading-dots {
+            display: inline-flex;
+            gap: 5px;
+        }
+
+        .loading-dots span {
+            width: 8px;
+            height: 8px;
+            background: white;
+            border-radius: 50%;
+            animation: bounce 1.4s infinite ease-in-out;
+        }
+
+        @keyframes bounce {
+            0%, 80%, 100% { transform: scale(0); }
+            40% { transform: scale(1); }
+        }
+
+        @media (max-width: 768px) {
+            .input-group {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1>🚀 LearnPath AI</h1>
+            <p>Get personalized learning roadmaps powered by AI</p>
+        </div>
+    </header>
+
+    <main class="container">
+        <section class="query-section">
+            <div class="input-card">
+                <h2>What do you want to learn?</h2>
+                <form id="roadmap-form">
+                    <div class="input-group">
+                        <input type="text" id="user-query" 
+                               placeholder="e.g., 'I want to learn machine learning with Python in 3 months'"
+                               required>
+                        <button type="submit">Generate Roadmap</button>
+                    </div>
+                    
+                    <div class="context-options">
+                        <label>Current Level:
+                            <select id="skill-level">
+                                <option value="beginner">🚀 Beginner</option>
+                                <option value="intermediate">⚡ Intermediate</option>
+                                <option value="advanced">🔥 Advanced</option>
+                            </select>
+                        </label>
+                        
+                        <label>Time Commitment:
+                            <select id="time-commitment">
+                                <option value="part-time">Part-time (10-15 hrs/week)</option>
+                                <option value="full-time">Full-time (30-40 hrs/week)</option>
+                            </select>
+                        </label>
+                    </div>
+                </form>
+            </div>
+        </section>
+
+        <section class="loading-section" id="loading" style="display: none;">
+            <div class="loader">
+                <div class="ai-thinking">
+                    <span>🤔 AI is crafting your personalized roadmap...</span>
+                    <div class="loading-dots">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="roadmap-section" id="roadmap-output" style="display: none;">
+            <div class="roadmap-container">
+                <div id="roadmap-content"></div>
+            </div>
+        </section>
+    </main>
+
+    <script type="module">
+        import AIIntegration from './api/generate-roadmap.js';
+
+        class RoadmapApp {
+            constructor() {
+                this.ai = new AIIntegration();
+                this.initializeEventListeners();
+            }
+
+            initializeEventListeners() {
+                const form = document.getElementById('roadmap-form');
+                form.addEventListener('submit', (e) => this.handleSubmit(e));
+            }
+
+            async handleSubmit(e) {
+                e.preventDefault();
+                
+                const userQuery = document.getElementById('user-query').value;
+                const skillLevel = document.getElementById('skill-level').value;
+                const timeCommitment = document.getElementById('time-commitment').value;
+
+                if (!userQuery.trim()) return;
+
+                this.showLoading();
+                
+                try {
+                    console.log("🚀 Generating roadmap for:", userQuery);
+                    const result = await this.ai.generateRoadmap(userQuery, skillLevel, timeCommitment);
+                    console.log("✅ AI Response:", result);
+                    
+                    if (result.success) {
+                        this.displayRoadmap(result.roadmap, userQuery);
+                    } else {
+                        throw new Error('AI generation failed');
+                    }
+                    
+                } catch (error) {
+                    console.error("❌ Error:", error);
+                    this.showError('Failed to generate roadmap. Please try again.');
+                } finally {
+                    this.hideLoading();
+                }
+            }
+
+            displayRoadmap(roadmap, userQuery) {
+                const outputSection = document.getElementById('roadmap-output');
+                const contentDiv = document.getElementById('roadmap-content');
+                
+                outputSection.style.display = 'block';
+                
+                let html = `
+                    <div class="analysis-header">
+                        <h3>🎯 Your Personalized Learning Path</h3>
+                        <p><strong>Goal:</strong> ${userQuery}</p>
+                    </div>
+                `;
+
+                if (!roadmap || roadmap.length === 0) {
+                    html = `<p>No roadmap generated. Please try again.</p>`;
+                } else {
+                    roadmap.forEach((phase, index) => {
+                        html += `
+                            <div class="phase">
+                                <div class="phase-header">
+                                    <div class="phase-title">Phase ${index + 1}: ${phase.phase || 'Learning Phase'}</div>
+                                    <div class="phase-duration">${phase.duration || '4-6 weeks'}</div>
+                                </div>
+                                
+                                <div class="phase-content">
+                                    <h4>📚 What You'll Learn:</h4>
+                                    <ul class="topic-list">
+                                        ${(phase.topics && phase.topics.length > 0) 
+                                            ? phase.topics.map(topic => `<li>${topic}</li>`).join('')
+                                            : '<li>Core concepts and fundamentals</li><li>Essential skills and techniques</li>'
+                                        }
+                                    </ul>
+                                    
+                                    <h4>⚡ Projects to Build:</h4>
+                                    <ul class="project-list">
+                                        ${(phase.projects && phase.projects.length > 0)
+                                            ? phase.projects.map(project => `<li>${project}</li>`).join('')
+                                            : '<li>Practice project to apply skills</li><li>Portfolio piece to showcase learning</li>'
+                                        }
+                                    </ul>
+                                    
+                                    <h4>🔗 Recommended Resources:</h4>
+                                    <ul class="resource-list">
+                                        ${(phase.resources && phase.resources.length > 0)
+                                            ? phase.resources.map(resource => `<li>${resource}</li>`).join('')
+                                            : '<li>Free online tutorials and courses</li><li>Official documentation</li><li>Community forums</li>'
+                                        }
+                                    </ul>
+                                </div>
+                            </div>
+                        `;
+                    });
+                }
+
+                contentDiv.innerHTML = html;
+                outputSection.scrollIntoView({ behavior: 'smooth' });
+            }
+
+            showLoading() {
+                document.getElementById('loading').style.display = 'block';
+                document.getElementById('roadmap-output').style.display = 'none';
+            }
+
+            hideLoading() {
+                document.getElementById('loading').style.display = 'none';
+            }
+
+            showError(message) {
+                alert(message);
+            }
+        }
+
+        // Initialize app when DOM loads
+        document.addEventListener('DOMContentLoaded', () => {
+            new RoadmapApp();
+        });
+    </script>
+</body>
 </html>
