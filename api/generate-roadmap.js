@@ -1,490 +1,846 @@
-class AIIntegration {
-    constructor() {
-        // No API token needed - we use smart templates
-    }
-
-    async generateRoadmap(userQuery, level = "beginner", timeframe = "3 months") {
-        console.log("🎯 Generating roadmap for:", userQuery);
-        
-        // Use smart template system that works for ANY topic
-        return this.generateSmartRoadmap(userQuery, level, timeframe);
-    }
-
-    generateSmartRoadmap(userQuery, level, timeframe) {
-        // Analyze the query to create personalized content
-        const analysis = this.analyzeQuery(userQuery);
-        
-        return {
-            success: true,
-            roadmap: this.createPersonalizedPhases(analysis, level, timeframe),
-            note: "AI-powered personalized learning path"
-        };
-    }
-
-    analyzeQuery(query) {
-        const lowerQuery = query.toLowerCase();
-        
-        return {
-            primaryTopic: this.detectTopic(lowerQuery),
-            isTechnical: this.isTechnicalTopic(lowerQuery),
-            hasTools: this.detectTools(lowerQuery),
-            goals: this.detectGoals(lowerQuery)
-        };
-    }
-
-    detectTopic(query) {
-        if (query.includes('machine learning') || query.includes('ml') || query.includes('ai')) 
-            return 'machine learning';
-        if (query.includes('web') || query.includes('frontend') || query.includes('backend')) 
-            return 'web development';
-        if (query.includes('data') || query.includes('analysis') || query.includes('python')) 
-            return 'data science';
-        if (query.includes('mobile') || query.includes('android') || query.includes('ios')) 
-            return 'mobile development';
-        return 'programming';
-    }
-
-    createPersonalizedPhases(analysis, level, timeframe) {
-        const { primaryTopic, isTechnical, hasTools, goals } = analysis;
-        
-        switch(primaryTopic) {
-            case 'machine learning':
-                return this.getMLRoadmap(level, timeframe);
-            case 'web development':
-                return this.getWebDevRoadmap(level, timeframe);
-            case 'data science':
-                return this.getDataScienceRoadmap(level, timeframe);
-            default:
-                return this.getGeneralRoadmap(primaryTopic, level, timeframe);
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LearnPath AI - Smart Learning Roadmaps</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
-    }
 
-    getMLRoadmap(level, timeframe) {
-        if (level === 'beginner') {
-            return [
-                {
-                    phase: "Python & Math Foundations",
-                    duration: "4 weeks",
-                    topics: [
-                        "Python programming basics",
-                        "NumPy for numerical computing",
-                        "Pandas for data manipulation",
-                        "Linear algebra & statistics fundamentals",
-                        "Jupyter Notebooks setup"
-                    ],
-                    projects: [
-                        "Data analysis with Pandas",
-                        "Basic statistics calculations",
-                        "Data visualization with Matplotlib"
-                    ],
-                    resources: [
-                        "freeCodeCamp Python course",
-                        "Kaggle Python tutorials",
-                        "3Blue1Brown Linear Algebra"
-                    ]
-                },
-                {
-                    phase: "Machine Learning Fundamentals",
-                    duration: "6 weeks",
-                    topics: [
-                        "Scikit-learn library",
-                        "Supervised learning algorithms",
-                        "Model evaluation metrics",
-                        "Feature engineering",
-                        "Cross-validation techniques"
-                    ],
-                    projects: [
-                        "House price prediction model",
-                        "Classification model for iris dataset",
-                        "Customer segmentation with clustering"
-                    ],
-                    resources: [
-                        "Coursera Machine Learning course",
-                        "Scikit-learn documentation",
-                        "Towards Data Science blogs"
-                    ]
-                },
-                {
-                    phase: "Deep Learning & Specialization",
-                    duration: "8 weeks",
-                    topics: [
-                        "TensorFlow/Keras fundamentals",
-                        "Neural networks architecture",
-                        "Computer vision basics",
-                        "Natural language processing",
-                        "Model deployment basics"
-                    ],
-                    projects: [
-                        "MNIST digit classification",
-                        "Sentiment analysis model",
-                        "Image classifier for custom dataset"
-                    ],
-                    resources: [
-                        "TensorFlow tutorials",
-                        "Fast.ai practical deep learning",
-                        "PyTorch tutorials"
-                    ]
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        header {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            padding: 2rem 0;
+            text-align: center;
+            color: white;
+        }
+
+        header h1 {
+            font-size: 3rem;
+            margin-bottom: 0.5rem;
+        }
+
+        header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+
+        main {
+            padding: 2rem 0;
+        }
+
+        .input-card {
+            background: white;
+            padding: 2rem;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            margin-bottom: 2rem;
+        }
+
+        .input-card h2 {
+            margin-bottom: 1.5rem;
+            color: #2d3748;
+            text-align: center;
+        }
+
+        .input-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 1.5rem;
+        }
+
+        #user-query {
+            flex: 1;
+            padding: 15px;
+            border: 2px solid #e1e5e9;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        #user-query:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        button {
+            padding: 15px 25px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        button:hover {
+            background: #5a6fd8;
+        }
+
+        .context-options {
+            display: flex;
+            gap: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .context-options label {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            font-weight: 500;
+            color: #4a5568;
+        }
+
+        select {
+            padding: 10px;
+            border: 2px solid #e1e5e9;
+            border-radius: 6px;
+            background: white;
+            min-width: 200px;
+        }
+
+        .roadmap-container {
+            background: white;
+            padding: 2rem;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .analysis-header {
+            text-align: center;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid #e1e5e9;
+        }
+
+        .analysis-header h3 {
+            color: #2d3748;
+            margin-bottom: 0.5rem;
+        }
+
+        .phase {
+            background: #f8f9fa;
+            margin: 1.5rem 0;
+            padding: 1.5rem;
+            border-radius: 10px;
+            border-left: 4px solid #667eea;
+        }
+
+        .phase-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .phase-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: #2d3748;
+        }
+
+        .phase-duration {
+            background: #667eea;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+        }
+
+        .phase-content h4 {
+            color: #4a5568;
+            margin: 1rem 0 0.5rem 0;
+        }
+
+        .topic-list, .project-list, .resource-list {
+            list-style: none;
+            margin: 0.5rem 0 1.5rem 0;
+        }
+
+        .topic-list li, .project-list li, .resource-list li {
+            padding: 8px 0;
+            border-bottom: 1px solid #e2e8f0;
+            display: flex;
+            align-items: center;
+        }
+
+        .topic-list li:before {
+            content: "📚 ";
+            margin-right: 8px;
+        }
+
+        .project-list li:before {
+            content: "⚡ ";
+            margin-right: 8px;
+        }
+
+        .resource-list li:before {
+            content: "🔗 ";
+            margin-right: 8px;
+        }
+
+        .loader {
+            text-align: center;
+            padding: 3rem;
+            color: white;
+        }
+
+        .ai-thinking {
+            font-size: 1.2rem;
+            margin-bottom: 1rem;
+        }
+
+        .loading-dots {
+            display: inline-flex;
+            gap: 5px;
+        }
+
+        .loading-dots span {
+            width: 8px;
+            height: 8px;
+            background: white;
+            border-radius: 50%;
+            animation: bounce 1.4s infinite ease-in-out;
+        }
+
+        .loading-dots span:nth-child(1) { animation-delay: -0.32s; }
+        .loading-dots span:nth-child(2) { animation-delay: -0.16s; }
+
+        @keyframes bounce {
+            0%, 80%, 100% { transform: scale(0); }
+            40% { transform: scale(1); }
+        }
+
+        .error-message {
+            background: #fed7d7;
+            color: #c53030;
+            padding: 1rem;
+            border-radius: 8px;
+            text-align: center;
+            margin: 1rem 0;
+        }
+
+        @media (max-width: 768px) {
+            .input-group {
+                flex-direction: column;
+            }
+            
+            .context-options {
+                flex-direction: column;
+                gap: 1rem;
+            }
+            
+            select {
+                min-width: 100%;
+            }
+            
+            .phase-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 0.5rem;
+            }
+            
+            header h1 {
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1>🚀 LearnPath AI</h1>
+            <p>Get personalized learning roadmaps powered by AI</p>
+        </div>
+    </header>
+
+    <main class="container">
+        <section class="query-section">
+            <div class="input-card">
+                <h2>What do you want to learn?</h2>
+                <form id="roadmap-form">
+                    <div class="input-group">
+                        <input type="text" id="user-query" 
+                               placeholder="e.g., 'I want to learn machine learning with Python in 3 months'"
+                               required>
+                        <button type="submit">Generate Roadmap</button>
+                    </div>
+                    
+                    <div class="context-options">
+                        <label>Current Level:
+                            <select id="skill-level">
+                                <option value="beginner">🚀 Beginner</option>
+                                <option value="intermediate">⚡ Intermediate</option>
+                                <option value="advanced">🔥 Advanced</option>
+                            </select>
+                        </label>
+                        
+                        <label>Time Commitment:
+                            <select id="time-commitment">
+                                <option value="part-time">Part-time (10-15 hrs/week)</option>
+                                <option value="full-time">Full-time (30-40 hrs/week)</option>
+                            </select>
+                        </label>
+                    </div>
+                </form>
+            </div>
+        </section>
+
+        <section class="loading-section" id="loading" style="display: none;">
+            <div class="loader">
+                <div class="ai-thinking">
+                    <span>🤔 AI is crafting your personalized roadmap...</span>
+                    <div class="loading-dots">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="roadmap-section" id="roadmap-output" style="display: none;">
+            <div class="roadmap-container">
+                <div id="roadmap-content"></div>
+            </div>
+        </section>
+    </main>
+
+    <script>
+        class RoadmapApp {
+            constructor() {
+                this.initializeEventListeners();
+            }
+
+            initializeEventListeners() {
+                const form = document.getElementById('roadmap-form');
+                form.addEventListener('submit', (e) => this.handleSubmit(e));
+            }
+
+            async handleSubmit(e) {
+                e.preventDefault();
+                
+                const userQuery = document.getElementById('user-query').value;
+                const skillLevel = document.getElementById('skill-level').value;
+                const timeCommitment = document.getElementById('time-commitment').value;
+
+                if (!userQuery.trim()) {
+                    this.showError('Please enter what you want to learn');
+                    return;
                 }
-            ];
-        } else {
-            return [
-                {
-                    phase: "Advanced ML Techniques",
-                    duration: "5 weeks",
-                    topics: [
-                        "Ensemble methods & boosting",
-                        "Hyperparameter optimization",
-                        "Neural network architectures",
-                        "Transfer learning",
-                        "Model interpretability"
-                    ],
-                    projects: [
-                        "Advanced feature engineering pipeline",
-                        "Custom neural network implementation",
-                        "Model deployment with Flask"
-                    ],
-                    resources: [
-                        "Advanced ML books",
-                        "Research papers",
-                        "ML competition platforms"
-                    ]
-                },
-                {
-                    phase: "Specialization & Real Projects",
-                    duration: "7 weeks",
-                    topics: [
-                        "Computer vision with CNN",
-                        "NLP with transformers",
-                        "Time series forecasting",
-                        "MLOps and deployment",
-                        "Cloud ML services"
-                    ],
-                    projects: [
-                        "End-to-end ML project",
-                        "Kaggle competition entry",
-                        "Production-ready model API"
-                    ],
-                    resources: [
-                        "Advanced online courses",
-                        "Open-source projects",
-                        "Industry case studies"
-                    ]
+
+                this.showLoading();
+                
+                try {
+                    const result = await this.generateRoadmap(userQuery, skillLevel, timeCommitment);
+                    
+                    if (result.success) {
+                        this.displayRoadmap(result.roadmap, userQuery, skillLevel, timeCommitment);
+                    } else {
+                        throw new Error('Roadmap generation failed');
+                    }
+                    
+                } catch (error) {
+                    console.error("Error:", error);
+                    this.showError('Failed to generate roadmap. Please try again.');
+                } finally {
+                    this.hideLoading();
                 }
-            ];
-        }
-    }
-
-    getWebDevRoadmap(level, timeframe) {
-        // Similar detailed structure for web development
-        return [
-            {
-                phase: "Frontend Fundamentals",
-                duration: "5 weeks",
-                topics: ["HTML5", "CSS3", "JavaScript ES6+", "Responsive Design", "Git"],
-                projects: ["Portfolio website", "Todo app", "Weather app"],
-                resources: ["MDN Web Docs", "freeCodeCamp", "JavaScript.info"]
-            },
-            {
-                phase: "Modern Frameworks",
-                duration: "6 weeks",
-                topics: ["React.js", "State management", "APIs", "Testing"],
-                projects: ["E-commerce site", "Social media app", "Dashboard"],
-                resources: ["React documentation", "Scrimba", "Frontend Masters"]
-            },
-            {
-                phase: "Full Stack Development",
-                duration: "7 weeks",
-                topics: ["Node.js", "Databases", "Authentication", "Deployment"],
-                projects: ["Full stack application", "REST API", "Real-time app"],
-                resources: ["Node.js guides", "MongoDB University", "Dev.to"]
             }
-        ];
-    }
 
-    getDataScienceRoadmap(level, timeframe) {
-        // Detailed data science roadmap
-        return [
-            {
-                phase: "Data Analysis Foundation",
-                duration: "4 weeks",
-                topics: ["Python basics", "Pandas", "Data visualization", "SQL", "Statistics"],
-                projects: ["Exploratory data analysis", "Data cleaning project", "Dashboard creation"],
-                resources: ["DataCamp", "Kaggle courses", "Towards Data Science"]
-            },
-            {
-                phase: "Machine Learning Application",
-                duration: "6 weeks",
-                topics: ["ML algorithms", "Feature engineering", "Model evaluation", "ML pipelines"],
-                projects: ["Predictive modeling", "Classification project", "Regression analysis"],
-                resources: ["Coursera ML", "Scikit-learn docs", "ML practice platforms"]
+            async generateRoadmap(userQuery, level, timeframe) {
+                // Smart roadmap generator - works without API
+                return this.generateSmartRoadmap(userQuery, level, timeframe);
             }
-        ];
-    }
 
-    getGeneralRoadmap(topic, level, timeframe) {
-        // Generic but smart roadmap for any topic
-        return [
-            {
-                phase: `Master ${topic} Fundamentals`,
-                duration: "4-5 weeks",
-                topics: [
-                    `Core concepts of ${topic}`,
-                    "Essential terminology and principles",
-                    "Basic tools and environment setup",
-                    "Foundational theory and practice"
-                ],
-                projects: [
-                    `Simple ${topic} demonstration project`,
-                    "Basic skill application exercises",
-                    "Learning progress documentation"
-                ],
-                resources: [
-                    "YouTube tutorial series",
-                    "freeCodeCamp resources",
-                    "Official documentation",
-                    "Beginner-friendly guides"
-                ]
-            },
-            {
-                phase: `Build Practical ${topic} Skills`,
-                duration: "5-6 weeks",
-                topics: [
-                    `Advanced ${topic} techniques`,
-                    "Real-world applications and use cases",
-                    "Problem-solving methodologies",
-                    "Industry standards and best practices"
-                ],
-                projects: [
-                    `Portfolio ${topic} project`,
-                    "Real-case study implementation",
-                    "Skill demonstration project"
-                ],
-                resources: [
-                    "Interactive learning platforms",
-                    "Online communities and forums",
-                    "Practice challenges",
-                    "Open-source projects"
-                ]
+            generateSmartRoadmap(userQuery, level, timeframe) {
+                const analysis = this.analyzeQuery(userQuery, level, timeframe);
+                
+                return {
+                    success: true,
+                    roadmap: this.createPersonalizedRoadmap(analysis, level, timeframe),
+                    note: "AI-powered personalized learning path"
+                };
             }
-        ];
-    }
-}
 
-createUniversalRoadmap(userQuery, level, timeframe) {
-    // Smart analysis of any query
-    const analysis = this.analyzeUniversalQuery(userQuery);
-    
-    return [
-        {
-            phase: `Master ${analysis.topic} Fundamentals`,
-            duration: this.getDuration(level, 1),
-            topics: [
-                `Core principles of ${analysis.topic}`,
-                `${analysis.topic} terminology and concepts`,
-                `Essential ${analysis.field} tools and setup`,
-                "Fundamental theory and practice",
-                `${analysis.field} best practices and standards`
-            ],
-            projects: [
-                `Basic ${analysis.topic} demonstration project`,
-                `${analysis.topic} concept exploration`,
-                "Learning journal and progress tracking"
-            ],
-            resources: [
-                `${analysis.field} tutorial series on YouTube`,
-                "freeCodeCamp learning resources",
-                "Official documentation and guides",
-                "Beginner-friendly online courses"
-            ]
-        },
-        {
-            phase: `Build Practical ${analysis.topic} Skills`,
-            duration: this.getDuration(level, 2),
-            topics: [
-                `Advanced ${analysis.topic} techniques`,
-                `Real-world ${analysis.field} applications`,
-                "Problem-solving methodologies",
-                "Industry tools and software",
-                "Quality assurance and testing"
-            ],
-            projects: [
-                `Portfolio ${analysis.topic} project`,
-                "Real-case study implementation",
-                "Skill demonstration project",
-                "Community or open-source contribution"
-            ],
-            resources: [
-                "Interactive learning platforms",
-                "Online communities and forums",
-                "Practice projects and challenges",
-                "Industry blogs and publications"
-            ]
-        },
-        {
-            phase: `${analysis.topic} Mastery & Specialization`,
-            duration: this.getDuration(level, 3),
-            topics: [
-                "Expert-level concepts and advanced topics",
-                "Industry trends and emerging technologies",
-                "Advanced optimization techniques",
-                "Leadership and project management",
-                "Career development and networking"
-            ],
-            projects: [
-                "Complex capstone project",
-                "Research paper or case study",
-                "Mentorship or teaching opportunity",
-                "Industry certification preparation"
-            ],
-            resources: [
-                "Advanced certification courses",
-                "Industry conferences and webinars",
-                "Professional networks",
-                "Research papers and journals"
-            ]
+            analyzeQuery(query, level, timeframe) {
+                const cleanTopic = this.extractMainTopic(query);
+                const field = this.detectField(cleanTopic);
+                const goals = this.detectGoals(query);
+                
+                return {
+                    topic: cleanTopic,
+                    field: field,
+                    level: level,
+                    timeframe: timeframe,
+                    goals: goals,
+                    isTechnical: ['technology', 'programming', 'data', 'cybersecurity'].includes(field),
+                    hasPractical: !['theory', 'academic'].includes(field)
+                };
+            }
+
+            extractMainTopic(query) {
+                const commonPhrases = [
+                    'i want to learn', 'i want to study', 'how to learn', 'learn', 'study', 'master',
+                    'become good at', 'get better at', 'roadmap for', 'guide to', 'how can i learn',
+                    'i need to learn', 'teach me', 'show me how to', 'can you teach me'
+                ];
+                
+                let topic = query.toLowerCase();
+                
+                // Remove common phrases
+                commonPhrases.forEach(phrase => {
+                    const regex = new RegExp('\\b' + phrase + '\\b', 'gi');
+                    topic = topic.replace(regex, '');
+                });
+                
+                // Remove extra spaces and trim
+                topic = topic.replace(/\s+/g, ' ').trim();
+                
+                // If empty after cleaning, use the original query but clean it
+                if (!topic || topic.length < 2) {
+                    topic = query.replace(/[^\w\s]/gi, ' ').replace(/\s+/g, ' ').trim();
+                }
+                
+                // Extract just the main subject (first few words)
+                const words = topic.split(' ');
+                if (words.length > 5) {
+                    topic = words.slice(0, 5).join(' ');
+                }
+                
+                // Capitalize first letter of each word
+                return topic.split(' ')
+                    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+                    .join(' ');
+            }
+
+            detectField(topic) {
+                const lowerTopic = topic.toLowerCase();
+                
+                if (lowerTopic.includes('machine learning') || lowerTopic.includes('programming') || 
+                    lowerTopic.includes('coding') || lowerTopic.includes('web') || lowerTopic.includes('software') || 
+                    lowerTopic.includes('tech') || lowerTopic.includes('computer') || lowerTopic.includes('algorithm')) {
+                    return 'technology';
+                } else if (lowerTopic.includes('data science') || lowerTopic.includes('data analysis') || 
+                           lowerTopic.includes('analytics') || lowerTopic.includes('python') || lowerTopic.includes('sql')) {
+                    return 'data';
+                } else if (lowerTopic.includes('marketing') || lowerTopic.includes('business') || 
+                           lowerTopic.includes('sales') || lowerTopic.includes('finance') || lowerTopic.includes('entrepreneur')) {
+                    return 'business';
+                } else if (lowerTopic.includes('design') || lowerTopic.includes('art') || 
+                           lowerTopic.includes('creative') || lowerTopic.includes('photo') || lowerTopic.includes('ui') || lowerTopic.includes('ux')) {
+                    return 'creative';
+                } else if (lowerTopic.includes('language') || lowerTopic.includes('english') || 
+                           lowerTopic.includes('spanish') || lowerTopic.includes('french') || lowerTopic.includes('communication')) {
+                    return 'language';
+                } else if (lowerTopic.includes('music') || lowerTopic.includes('instrument') || 
+                           lowerTopic.includes('guitar') || lowerTopic.includes('piano') || lowerTopic.includes('singing')) {
+                    return 'arts';
+                } else if (lowerTopic.includes('cooking') || lowerTopic.includes('culinary') || 
+                           lowerTopic.includes('food') || lowerTopic.includes('baking') || lowerTopic.includes('chef')) {
+                    return 'culinary';
+                } else if (lowerTopic.includes('fitness') || lowerTopic.includes('workout') || 
+                           lowerTopic.includes('gym') || lowerTopic.includes('exercise') || lowerTopic.includes('yoga')) {
+                    return 'fitness';
+                } else if (lowerTopic.includes('history') || lowerTopic.includes('science') || 
+                           lowerTopic.includes('math') || lowerTopic.includes('physics') || lowerTopic.includes('biology')) {
+                    return 'academic';
+                } else if (lowerTopic.includes('cyber') || lowerTopic.includes('security') || lowerTopic.includes('hacking')) {
+                    return 'cybersecurity';
+                }
+                
+                return 'general';
+            }
+
+            detectGoals(query) {
+                const goals = [];
+                const lowerQuery = query.toLowerCase();
+                
+                if (lowerQuery.includes('job') || lowerQuery.includes('career') || lowerQuery.includes('employment')) {
+                    goals.push('career');
+                }
+                if (lowerQuery.includes('portfolio') || lowerQuery.includes('projects') || lowerQuery.includes('showcase')) {
+                    goals.push('portfolio');
+                }
+                if (lowerQuery.includes('freelance') || lowerQuery.includes('client') || lowerQuery.includes('consult')) {
+                    goals.push('freelance');
+                }
+                if (lowerQuery.includes('startup') || lowerQuery.includes('business') || lowerQuery.includes('entrepreneur')) {
+                    goals.push('entrepreneurship');
+                }
+                if (lowerQuery.includes('hobby') || lowerQuery.includes('fun') || lowerQuery.includes('personal')) {
+                    goals.push('hobby');
+                }
+                
+                return goals.length > 0 ? goals : ['skill-development'];
+            }
+
+            createPersonalizedRoadmap(analysis, level, timeframe) {
+                const { topic, field, goals } = analysis;
+                
+                // Get base roadmap structure
+                let roadmap = this.getBaseRoadmap(field, level, timeframe, topic);
+                
+                // Personalize based on goals
+                roadmap = this.personalizeForGoals(roadmap, goals, topic);
+                
+                // Adjust for level
+                roadmap = this.adjustForLevel(roadmap, level);
+                
+                return roadmap;
+            }
+
+            getBaseRoadmap(field, level, timeframe, topic) {
+                const baseStructures = {
+                    'technology': this.getTechRoadmap(level, timeframe, topic),
+                    'data': this.getDataRoadmap(level, timeframe, topic),
+                    'business': this.getBusinessRoadmap(level, timeframe, topic),
+                    'creative': this.getCreativeRoadmap(level, timeframe, topic),
+                    'language': this.getLanguageRoadmap(level, timeframe, topic),
+                    'arts': this.getArtsRoadmap(level, timeframe, topic),
+                    'culinary': this.getCulinaryRoadmap(level, timeframe, topic),
+                    'fitness': this.getFitnessRoadmap(level, timeframe, topic),
+                    'academic': this.getAcademicRoadmap(level, timeframe, topic),
+                    'cybersecurity': this.getCyberSecurityRoadmap(level, timeframe, topic)
+                };
+                
+                return baseStructures[field] || this.getGeneralRoadmap(level, timeframe, topic);
+            }
+
+            getTechRoadmap(level, timeframe, topic) {
+                if (level === 'beginner') {
+                    return [
+                        {
+                            phase: `${topic} Fundamentals`,
+                            duration: "4-5 weeks",
+                            topics: [
+                                "Core programming concepts",
+                                "Basic algorithms and logic",
+                                "Development environment setup",
+                                "Version control with Git",
+                                "Debugging fundamentals"
+                            ],
+                            projects: [
+                                "Simple calculator application",
+                                "Basic data processing script",
+                                "Personal portfolio website"
+                            ],
+                            resources: [
+                                "freeCodeCamp interactive tutorials",
+                                "MDN Web Docs",
+                                "Stack Overflow community"
+                            ]
+                        },
+                        {
+                            phase: `Practical ${topic} Development`,
+                            duration: "6-7 weeks",
+                            topics: [
+                                "Advanced programming techniques",
+                                "Data structures implementation",
+                                "API integration",
+                                "Database fundamentals",
+                                "Testing methodologies"
+                            ],
+                            projects: [
+                                "Weather application with API",
+                                "Task management system",
+                                "Data visualization dashboard"
+                            ],
+                            resources: [
+                                "Official documentation",
+                                "GitHub open source projects",
+                                "Programming communities"
+                            ]
+                        }
+                    ];
+                } else {
+                    return [
+                        {
+                            phase: `Advanced ${topic} Concepts`,
+                            duration: "5-6 weeks",
+                            topics: [
+                                "System architecture design",
+                                "Performance optimization",
+                                "Security best practices",
+                                "Cloud computing integration",
+                                "Microservices architecture"
+                            ],
+                            projects: [
+                                "Scalable web application",
+                                "Real-time data processing",
+                                "Machine learning integration"
+                            ],
+                            resources: [
+                                "Advanced technical books",
+                                "Industry conferences",
+                                "Research papers"
+                            ]
+                        }
+                    ];
+                }
+            }
+
+            getCulinaryRoadmap(level, timeframe, topic) {
+                return [
+                    {
+                        phase: `${topic} Basics & Techniques`,
+                        duration: "4-5 weeks",
+                        topics: [
+                            "Kitchen safety and hygiene",
+                            "Basic knife skills and cuts",
+                            "Fundamental cooking methods",
+                            "Ingredient selection and preparation",
+                            "Flavor balancing and seasoning"
+                        ],
+                        projects: [
+                            "Master 5 basic recipes perfectly",
+                            "Create a balanced meal plan",
+                            "Practice knife skills daily"
+                        ],
+                        resources: [
+                            "YouTube cooking channels",
+                            "Cookbook fundamentals",
+                            "Local cooking classes"
+                        ]
+                    },
+                    {
+                        phase: `Advanced ${topic} Skills`,
+                        duration: "6-8 weeks",
+                        topics: [
+                            "Advanced cooking techniques",
+                            "Recipe development and adaptation",
+                            "Presentation and plating",
+                            "Cultural cuisine exploration",
+                            "Kitchen management"
+                        ],
+                        projects: [
+                            "Create original recipes",
+                            "Host a dinner party",
+                            "Master complex dishes"
+                        ],
+                        resources: [
+                            "Specialized cookbooks",
+                            "Cooking workshops",
+                            "Food blogs and communities"
+                        ]
+                    }
+                ];
+            }
+
+            getGeneralRoadmap(level, timeframe, topic) {
+                return [
+                    {
+                        phase: `${topic} Foundation Building`,
+                        duration: "4-5 weeks",
+                        topics: [
+                            `Core principles of ${topic}`,
+                            "Essential terminology and concepts",
+                            "Fundamental tools and resources",
+                            "Basic practice techniques",
+                            "Learning methodology"
+                        ],
+                        projects: [
+                            `Beginner ${topic.toLowerCase()} project`,
+                            "Skill demonstration exercise",
+                            "Progress tracking journal"
+                        ],
+                        resources: [
+                            "Online tutorial series",
+                            "Beginner-friendly guides",
+                            "Practice communities"
+                        ]
+                    },
+                    {
+                        phase: `${topic} Skill Development`,
+                        duration: "5-6 weeks",
+                        topics: [
+                            "Advanced techniques and methods",
+                            "Real-world applications",
+                            "Problem-solving approaches",
+                            "Best practices and standards",
+                            "Performance improvement"
+                        ],
+                        projects: [
+                            `Intermediate ${topic.toLowerCase()} project`,
+                            "Practical application case study",
+                            "Portfolio piece creation"
+                        ],
+                        resources: [
+                            "Advanced learning materials",
+                            "Expert communities",
+                            "Practice platforms"
+                        ]
+                    },
+                    {
+                        phase: `${topic} Mastery & Application`,
+                        duration: "6-8 weeks",
+                        topics: [
+                            "Expert-level concepts",
+                            "Industry insights and trends",
+                            "Advanced optimization",
+                            "Teaching and mentoring",
+                            "Continuous learning strategies"
+                        ],
+                        projects: [
+                            "Capstone master project",
+                            "Community contribution",
+                            "Teaching demonstration"
+                        ],
+                        resources: [
+                            "Master classes and workshops",
+                            "Professional networks",
+                            "Advanced certifications"
+                        ]
+                    }
+                ];
+            }
+
+            personalizeForGoals(roadmap, goals, topic) {
+                goals.forEach(goal => {
+                    roadmap.forEach(phase => {
+                        switch(goal) {
+                            case 'career':
+                                phase.topics.push("Industry job requirements", "Professional networking");
+                                phase.projects.push("Resume-worthy project", "Interview preparation");
+                                phase.resources.push("Career guidance resources", "Industry job boards");
+                                break;
+                            case 'portfolio':
+                                phase.topics.push("Project presentation skills", "Portfolio optimization");
+                                phase.projects.push("Showcase-ready project", "Case study development");
+                                phase.resources.push("Portfolio examples", "Presentation guides");
+                                break;
+                            case 'freelance':
+                                phase.topics.push("Client management", "Pricing and contracts");
+                                phase.projects.push("Client project simulation", "Proposal writing");
+                                phase.resources.push("Freelance platforms", "Business management guides");
+                                break;
+                        }
+                    });
+                });
+                return roadmap;
+            }
+
+            adjustForLevel(roadmap, level) {
+                const adjustments = {
+                    'beginner': { durationMultiplier: 1.2, complexity: 'basic' },
+                    'intermediate': { durationMultiplier: 1.0, complexity: 'standard' },
+                    'advanced': { durationMultiplier: 0.8, complexity: 'advanced' }
+                };
+                
+                const adjustment = adjustments[level];
+                
+                return roadmap.map(phase => ({
+                    ...phase,
+                    duration: this.adjustDuration(phase.duration, adjustment.durationMultiplier)
+                }));
+            }
+
+            adjustDuration(duration, multiplier) {
+                const match = duration.match(/(\d+)/);
+                if (match) {
+                    const weeks = parseInt(match[1]);
+                    const adjusted = Math.round(weeks * multiplier);
+                    return `${adjusted} weeks`;
+                }
+                return duration;
+            }
+
+            displayRoadmap(roadmap, userQuery, level, timeframe) {
+                const outputSection = document.getElementById('roadmap-output');
+                const contentDiv = document.getElementById('roadmap-content');
+                
+                outputSection.style.display = 'block';
+                
+                let html = `
+                    <div class="analysis-header">
+                        <h3>🎯 Your Personalized Learning Path</h3>
+                        <p><strong>Goal:</strong> ${userQuery}</p>
+                        <p><strong>Level:</strong> ${level} | <strong>Time:</strong> ${timeframe}</p>
+                        <p><em>AI-powered roadmap tailored specifically for you</em></p>
+                    </div>
+                `;
+
+                roadmap.forEach((phase, index) => {
+                    html += `
+                        <div class="phase">
+                            <div class="phase-header">
+                                <div class="phase-title">Phase ${index + 1}: ${phase.phase}</div>
+                                <div class="phase-duration">${phase.duration}</div>
+                            </div>
+                            
+                            <div class="phase-content">
+                                <h4>📚 What You'll Learn:</h4>
+                                <ul class="topic-list">
+                                    ${phase.topics.map(topic => `<li>${topic}</li>`).join('')}
+                                </ul>
+                                
+                                <h4>⚡ Projects to Build:</h4>
+                                <ul class="project-list">
+                                    ${phase.projects.map(project => `<li>${project}</li>`).join('')}
+                                </ul>
+                                
+                                <h4>🔗 Recommended Resources:</h4>
+                                <ul class="resource-list">
+                                    ${phase.resources.map(resource => `<li>${resource}</li>`).join('')}
+                                </ul>
+                            </div>
+                        </div>
+                    `;
+                });
+
+                contentDiv.innerHTML = html;
+                outputSection.scrollIntoView({ behavior: 'smooth' });
+            }
+
+            showLoading() {
+                document.getElementById('loading').style.display = 'block';
+                document.getElementById('roadmap-output').style.display = 'none';
+            }
+
+            hideLoading() {
+                document.getElementById('loading').style.display = 'none';
+            }
+
+            showError(message) {
+                const existingError = document.querySelector('.error-message');
+                if (existingError) {
+                    existingError.remove();
+                }
+                
+                const errorDiv = document.createElement('div');
+                errorDiv.className = 'error-message';
+                errorDiv.textContent = message;
+                
+                document.querySelector('.input-card').appendChild(errorDiv);
+                
+                setTimeout(() => {
+                    errorDiv.remove();
+                }, 5000);
+            }
         }
-    ];
-}
 
-analyzeUniversalQuery(query) {
-    const lowerQuery = query.toLowerCase();
-    
-    // Detect the field/category
-    let field = 'technology';
-    if (lowerQuery.includes('marketing') || lowerQuery.includes('business') || lowerQuery.includes('sales')) {
-        field = 'business';
-    } else if (lowerQuery.includes('design') || lowerQuery.includes('art') || lowerQuery.includes('creative')) {
-        field = 'creative';
-    } else if (lowerQuery.includes('language') || lowerQuery.includes('english') || lowerQuery.includes('spanish')) {
-        field = 'language';
-    } else if (lowerQuery.includes('music') || lowerQuery.includes('instrument') || lowerQuery.includes('guitar')) {
-        field = 'arts';
-    } else if (lowerQuery.includes('cooking') || lowerQuery.includes('culinary') || lowerQuery.includes('food')) {
-        field = 'culinary';
-    } else if (lowerQuery.includes('fitness') || lowerQuery.includes('workout') || lowerQuery.includes('gym')) {
-        field = 'fitness';
-    }
-    
-    // Extract the main topic from query
-    const topic = this.extractMainTopic(query);
-    
-    return {
-        topic: topic,
-        field: field,
-        isTechnical: field === 'technology',
-        hasPracticalComponent: !['language', 'theory'].includes(field)
-    };
-}
-
-extractMainTopic(query) {
-    // Remove common phrases to get the core topic
-    const commonPhrases = [
-        'i want to learn', 'how to learn', 'learn', 'study', 'master',
-        'become good at', 'get better at', 'roadmap for', 'guide to'
-    ];
-    
-    let topic = query.toLowerCase();
-    commonPhrases.forEach(phrase => {
-        topic = topic.replace(phrase, '');
-    });
-    
-    // Capitalize first letter of each word
-    return topic.trim()
-        .split(' ')
-        .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-        .join(' ');
-}
-
-getDuration(level, phase) {
-    const durations = {
-        beginner: ['3-4 weeks', '4-5 weeks', '5-6 weeks'],
-        intermediate: ['2-3 weeks', '3-4 weeks', '4-5 weeks'],
-        advanced: ['1-2 weeks', '2-3 weeks', '3-4 weeks']
-    };
-    
-    return durations[level][phase - 1] || '4 weeks';
-}
-createPersonalizedRoadmap(topic, level, timeframe, userQuery) {
-    // First try predefined roadmaps
-    const predefined = this.getPredefinedRoadmap(topic, level, timeframe);
-    if (predefined) {
-        return predefined;
-    }
-    
-    // If no predefined roadmap, use universal generator
-    console.log(`🎯 Generating universal roadmap for: ${topic}`);
-    return this.createUniversalRoadmap(userQuery, level, timeframe);
-}
-
-getPredefinedRoadmap(topic, level, timeframe) {
-    const roadmaps = {
-        'machine learning': () => this.getMLRoadmap(level, timeframe),
-        'web development': () => this.getWebDevRoadmap(level, timeframe),
-        'data science': () => this.getDataScienceRoadmap(level, timeframe),
-        'mobile development': () => this.getMobileDevRoadmap(level, timeframe),
-        'digital marketing': () => this.getDigitalMarketingRoadmap(level, timeframe),
-        'graphic design': () => this.getGraphicDesignRoadmap(level, timeframe),
-        'cyber security': () => this.getCyberSecurityRoadmap(level, timeframe),
-        'cloud computing': () => this.getCloudComputingRoadmap(level, timeframe)
-    };
-    
-    return roadmaps[topic] ? roadmaps[topic]() : null;
-}
-getDigitalMarketingRoadmap(level, timeframe) {
-    return [
-        {
-            phase: "Marketing Fundamentals",
-            duration: "4 weeks",
-            topics: ["Marketing principles", "Consumer behavior", "Brand building", "Content strategy", "Analytics basics"],
-            projects: ["Brand analysis", "Content calendar", "Social media audit"],
-            resources: ["HubSpot Academy", "Google Digital Garage", "Marketing blogs"]
-        },
-        {
-            phase: "Channel Specialization", 
-            duration: "6 weeks",
-            topics: ["SEO optimization", "Social media marketing", "Email marketing", "PPC advertising", "Conversion optimization"],
-            projects: ["SEO campaign", "Social media strategy", "Email sequence"],
-            resources: ["SEMrush Academy", "Facebook Blueprint", "Mailchimp guides"]
-        }
-    ];
-}
-
-getGraphicDesignRoadmap(level, timeframe) {
-    return [
-        {
-            phase: "Design Fundamentals",
-            duration: "5 weeks", 
-            topics: ["Color theory", "Typography", "Layout principles", "Design software", "Creative process"],
-            projects: ["Logo design", "Poster creation", "Brand style guide"],
-            resources: ["Adobe tutorials", "Behance inspiration", "Design books"]
-        },
-        {
-            phase: "Advanced Design Skills",
-            duration: "6 weeks",
-            topics: ["UI/UX design", "Motion graphics", "Brand identity", "Print design", "Portfolio development"],
-            projects: ["App interface", "Animated logo", "Complete brand package"],
-            resources: ["Figma tutorials", "Dribbble community", "Design conferences"]
-        }
-    ];
-}
-
-getCyberSecurityRoadmap(level, timeframe) {
-    return [
-        {
-            phase: "Security Fundamentals",
-            duration: "4 weeks",
-            topics: ["Networking basics", "Security principles", "Threat landscape", "Cryptography", "Security tools"],
-            projects: ["Network analysis", "Vulnerability assessment", "Security policy draft"],
-            resources: ["Cybrary courses", "Security blogs", "TryHackMe"]
-        },
-        {
-            phase: "Advanced Security",
-            duration: "8 weeks",
-            topics: ["Penetration testing", "Incident response", "Forensics", "Cloud security", "Compliance"],
-            projects: ["Penetration test report", "Incident simulation", "Security architecture"],
-            resources: ["Offensive Security", "SANS courses", "Security conferences"]
-        }
-    ];
-}
-
-export default AIIntegration;
+        // Initialize the application
+        document.addEventListener('DOMContentLoaded', () => {
+            new RoadmapApp();
+        });
+    </script>
+</body>
+</html>
