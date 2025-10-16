@@ -471,43 +471,101 @@
             }
 
             detectGoals(query) {
-                const goals = [];
-                const lowerQuery = query.toLowerCase();
-                
-                if (lowerQuery.includes('job') || lowerQuery.includes('career') || lowerQuery.includes('employment')) {
-                    goals.push('career');
-                }
-                if (lowerQuery.includes('portfolio') || lowerQuery.includes('projects') || lowerQuery.includes('showcase')) {
-                    goals.push('portfolio');
-                }
-                if (lowerQuery.includes('freelance') || lowerQuery.includes('client') || lowerQuery.includes('consult')) {
-                    goals.push('freelance');
-                }
-                if (lowerQuery.includes('startup') || lowerQuery.includes('business') || lowerQuery.includes('entrepreneur')) {
-                    goals.push('entrepreneurship');
-                }
-                if (lowerQuery.includes('hobby') || lowerQuery.includes('fun') || lowerQuery.includes('personal')) {
-                    goals.push('hobby');
-                }
-                
-                return goals.length > 0 ? goals : ['skill-development'];
-            }
+    const goals = [];
+    const lowerQuery = query.toLowerCase();
+    const field = this.detectField(this.extractMainTopic(query).toLowerCase());
+    
+    const professionalFields = ['technology', 'data', 'business', 'creative', 'cybersecurity'];
+    const isProfessionalField = professionalFields.includes(field);
+    
+    if (isProfessionalField) {
+        if (lowerQuery.includes('job') || lowerQuery.includes('career') || lowerQuery.includes('employment')) {
+            goals.push('career');
+        }
+        if (lowerQuery.includes('portfolio') || lowerQuery.includes('projects') || lowerQuery.includes('showcase')) {
+            goals.push('portfolio');
+        }
+        if (lowerQuery.includes('freelance') || lowerQuery.includes('client') || lowerQuery.includes('consult')) {
+            goals.push('freelance');
+        }
+        if (lowerQuery.includes('startup') || lowerQuery.includes('business') || lowerQuery.includes('entrepreneur')) {
+            goals.push('entrepreneurship');
+        }
+    }
+    
+    // Always check for hobby/personal goals
+    if (lowerQuery.includes('hobby') || lowerQuery.includes('fun') || lowerQuery.includes('personal') || 
+        lowerQuery.includes('enjoy') || lowerQuery.includes('recreation')) {
+        goals.push('hobby');
+    }
+    
+    // If no specific goals detected and it's a personal field, default to hobby
+    if (goals.length === 0 && !isProfessionalField) {
+        goals.push('hobby');
+    }
+    
+    return goals.length > 0 ? goals : ['skill-development'];
+}
 
-            createPersonalizedRoadmap(analysis, level, timeframe) {
-                const { topic, field, goals } = analysis;
-                
-                // Get base roadmap structure
-                let roadmap = this.getBaseRoadmap(field, level, timeframe, topic);
-                
-                // Personalize based on goals
-                roadmap = this.personalizeForGoals(roadmap, goals, topic);
-                
-                // Adjust for level
-                roadmap = this.adjustForLevel(roadmap, level);
-                
-                return roadmap;
+            personalizeForGoals(roadmap, goals, topic) {
+    const field = this.detectField(topic.toLowerCase());
+    
+    // Only add career/portfolio elements for professional fields
+    const professionalFields = ['technology', 'data', 'business', 'creative', 'cybersecurity'];
+    const isProfessionalField = professionalFields.includes(field);
+    
+    goals.forEach(goal => {
+        roadmap.forEach(phase => {
+            switch(goal) {
+                case 'career':
+                    if (isProfessionalField) {
+                        phase.topics.push("Industry job requirements", "Professional networking");
+                        phase.projects.push("Resume-worthy project", "Interview preparation");
+                        phase.resources.push("Career guidance resources", "Industry job boards");
+                    } else {
+                        // For non-professional fields, add relevant goals
+                        phase.topics.push("Skill mastery techniques", "Community engagement");
+                        phase.projects.push("Personal achievement project", "Skill demonstration");
+                        phase.resources.push("Community forums", "Skill-sharing platforms");
+                    }
+                    break;
+                case 'portfolio':
+                    if (isProfessionalField) {
+                        phase.topics.push("Project presentation skills", "Portfolio optimization");
+                        phase.projects.push("Showcase-ready project", "Case study development");
+                        phase.resources.push("Portfolio examples", "Presentation guides");
+                    } else {
+                        // For hobbies/personal skills
+                        phase.topics.push("Skill documentation", "Progress tracking");
+                        phase.projects.push("Personal milestone project", "Skill showcase");
+                        phase.resources.push("Progress tracking apps", "Personal blogs");
+                    }
+                    break;
+                case 'freelance':
+                    if (isProfessionalField) {
+                        phase.topics.push("Client management", "Pricing and contracts");
+                        phase.projects.push("Client project simulation", "Proposal writing");
+                        phase.resources.push("Freelance platforms", "Business management guides");
+                    }
+                    break;
+                case 'hobby':
+                    // For hobby goals, add fun and personal enjoyment elements
+                    phase.topics.push("Enjoyment techniques", "Personal satisfaction");
+                    phase.projects.push("Fun personal project", "Creative expression");
+                    phase.resources.push("Hobby communities", "Recreational resources");
+                    break;
+                case 'entrepreneurship':
+                    if (field === 'business' || field === 'technology') {
+                        phase.topics.push("Business planning", "Market research");
+                        phase.projects.push("Business plan development", "MVP creation");
+                        phase.resources.push("Startup resources", "Entrepreneurship guides");
+                    }
+                    break;
             }
-
+        });
+    });
+    return roadmap;
+}
             getBaseRoadmap(field, level, timeframe, topic) {
                 const baseStructures = {
                     'technology': this.getTechRoadmap(level, timeframe, topic),
