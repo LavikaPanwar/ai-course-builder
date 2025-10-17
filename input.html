@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Your Roadmap - LIAA</title>
+    <link rel="stylesheet" href="styles/style.css">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1 class="logo">LIAA</h1>
+            <p>Tell us about your learning goals</p>
+        </header>
+
+        <div class="input-form">
+            <div class="form-group">
+                <label for="domain">What do you want to learn?</label>
+                <input type="text" id="domain" placeholder="e.g., Web Development, Data Science, Machine Learning...">
+            </div>
+
+            <div class="form-group">
+                <label for="level">Current Skill Level</label>
+                <select id="level">
+                    <option value="">Select your level</option>
+                    <option value="beginner">👶 Beginner - Just starting out</option>
+                    <option value="intermediate">🚶 Intermediate - Some experience</option>
+                    <option value="advanced">🏃 Advanced - Looking to master</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="timeline">Preferred Timeline</label>
+                <select id="timeline">
+                    <option value="">Select timeline</option>
+                    <option value="3months">⏱️ 3 Months - Intensive</option>
+                    <option value="6months">📅 6 Months - Balanced</option>
+                    <option value="12months">🗓️ 12 Months - Relaxed</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="goals">Specific Goals (Optional)</label>
+                <textarea id="goals" placeholder="e.g., Build a portfolio, Get a job, Start freelancing..."></textarea>
+            </div>
+
+            <button class="generate-button" onclick="generateRoadmap()">
+                🚀 Generate My Roadmap
+            </button>
+        </div>
+    </div>
+
+    <script src="scripts/script.js"></script>
+</body>
+</html>
