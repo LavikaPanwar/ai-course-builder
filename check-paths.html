@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Path Checker</title>
+    <style>
+        .status { padding: 10px; margin: 5px; border-radius: 5px; }
+        .success { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
+    </style>
+</head>
+<body>
+    <h1>File Path Status Check</h1>
+    <div id="status"></div>
+    
+    <script>
+        const filesToCheck = [
+            'styles/style.css',
+            'scripts/script.js',
+            'index.html',
+            'input.html', 
+            'roadmap.html',
+            'week-detail.html'
+        ];
+        
+        const statusDiv = document.getElementById('status');
+        
+        filesToCheck.forEach(file => {
+            fetch(file)
+                .then(response => {
+                    const status = document.createElement('div');
+                    status.className = response.ok ? 'status success' : 'status error';
+                    status.textContent = response.ok ? 
+                        `✅ ${file} - Found` : 
+                        `❌ ${file} - Not Found`;
+                    statusDiv.appendChild(status);
+                })
+                .catch(error => {
+                    const status = document.createElement('div');
+                    status.className = 'status error';
+                    status.textContent = `❌ ${file} - Error: ${error.message}`;
+                    statusDiv.appendChild(status);
+                });
+        });
+    </script>
+</body>
+</html>
