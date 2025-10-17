@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Your Roadmap - LIAA</title>
+    <link rel="stylesheet" href="styles/style.css">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1 class="logo">LIAA</h1>
+            <div class="roadmap-header">
+                <h2>Your Web Development Roadmap</h2>
+                <p class="subtitle">12-week journey from beginner to job-ready</p>
+            </div>
+        </header>
+
+        <div class="roadmap-container">
+            <div class="weeks-grid" id="weeksGrid">
+                <!-- Weeks will be dynamically generated -->
+            </div>
+        </div>
+
+        <div class="action-buttons">
+            <button class="secondary-button" onclick="navigateToInput()">
+                ← Modify Goals
+            </button>
+            <button class="primary-button" onclick="shareRoadmap()">
+                📤 Share Roadmap
+            </button>
+        </div>
+    </div>
+
+    <script src="scripts/script.js"></script>
+    <script>
+        // Generate sample weeks (will be replaced with actual data)
+        generateWeeks();
+    </script>
+</body>
+</html>
